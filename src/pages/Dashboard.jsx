@@ -54,22 +54,40 @@ export default function Dashboard() {
         <p className="text-sm text-muted-foreground mt-1">Your Bondify account is ready. Start by depositing funds or completing your first task.</p>
       </motion.div>
 
-      {/* Get started banner */}
+      {/* Video hero banner */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
         className="relative overflow-hidden rounded-2xl"
+        style={{ height: '220px' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700" />
-        <div className="relative z-10 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* YouTube video background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <iframe
+            src="https://www.youtube.com/embed/vAdn7aLHpO0?autoplay=1&mute=1&loop=1&playlist=vAdn7aLHpO0&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"
+            style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'max(100%, 177.78vh)',
+              height: 'max(100%, 56.25vw)',
+              border: 'none', pointerEvents: 'none',
+            }}
+            allow="autoplay"
+            title="hero"
+          />
+        </div>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/80 via-emerald-950/70 to-navy/80" />
+        {/* Content */}
+        <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sparkles size={16} className="text-emerald-300" />
               <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Get started</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Make your first trade</h2>
-            <p className="text-white/70 text-sm mt-1">Deposit funds to start buying and selling treasury bonds.</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Earn by Selling Australian Bonds</h2>
+            <p className="text-white/70 text-sm mt-1">Deposit funds to start your bond distribution journey.</p>
           </div>
           <Link
             to="/dashboard/tasks"

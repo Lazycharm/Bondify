@@ -1,8 +1,8 @@
 const KEY = 'bondify_deposits';
-export const WALLET_KEY = 'bondify_wallet_balance';
 const BONUS_KEY = 'bondify_bonus_balance';
 const BONUS_GIVEN_KEY = 'bondify_bonus_given';
 const BONUS_WITHDRAWABLE_KEY = 'bondify_bonus_withdrawable';
+const WITHDRAWALS_KEY = 'bondify_withdrawals';
 
 export const FIRST_DEPOSIT_BONUS = 10000;
 
@@ -19,7 +19,9 @@ export function addDeposit({ userId, userEmail, amount, network, userPhone, user
   const deposits = getDeposits();
   const deposit = {
     id: `DEP-${Date.now()}`,
-    userId, userEmail, amount, network, userPhone, userSms,
+    userId, userEmail,
+    amount: parseInt(amount, 10),
+    network, userPhone, userSms,
     status: 'pending',
     created_at: new Date().toISOString(),
   };
@@ -33,21 +35,29 @@ export function updateDeposit(id, status) {
   const idx = deposits.findIndex((d) => d.id === id);
   if (idx === -1) return null;
   deposits[idx] = { ...deposits[idx], status, updated_at: new Date().toISOString() };
-  if (status === 'approved') {
-    const current = parseInt(localStorage.getItem(WALLET_KEY) || '0', 10);
-    localStorage.setItem(WALLET_KEY, String(current + deposits[idx].amount));
-    // Award first-deposit bonus once
-    if (!localStorage.getItem(BONUS_GIVEN_KEY)) {
-      localStorage.setItem(BONUS_GIVEN_KEY, '1');
-      localStorage.setItem(BONUS_KEY, String(FIRST_DEPOSIT_BONUS));
-    }
+  if (status === 'approved' && !localStorage.getItem(BONUS_GIVEN_KEY)) {
+    localStorage.setItem(BONUS_GIVEN_KEY, '1');
+    localStorage.setItem(BONUS_KEY, String(FIRST_DEPOSIT_BONUS));
   }
   localStorage.setItem(KEY, JSON.stringify(deposits));
   return deposits[idx];
 }
 
+// Computed live from records — always accurate, no accumulator drift
 export function getWalletBalance() {
-  return parseInt(localStorage.getItem(WALLET_KEY) || '0', 10);
+  const deposited = getDeposits()
+    .filter((d) => d.status === 'approved')
+    .reduce((s, d) => s + parseInt(d.amount, 10), 0);
+
+  let withdrawn = 0;
+  try {
+    const wds = JSON.parse(localStorage.getItem(WITHDRAWALS_KEY) || '[]');
+    withdrawn = wds
+      .filter((w) => w.status !== 'rejected')
+      .reduce((s, w) => s + parseInt(w.amount, 10), 0);
+  } catch { /* */ }
+
+  return Math.max(0, deposited - withdrawn);
 }
 
 export function getBonusBalance() {
