@@ -85,13 +85,13 @@ export default function TaskCenter() {
 
   function confirmTask() {
     if (!selectedBond) return;
-    // Generate unique buyers for this user + bond + today (seeded so refresh is stable)
-    const buyers = generateBuyerSession(user?.id, selectedBond.id, selectedBond);
+    const taskIndex = (taskState.completedToday ?? 0) + 1;
+    const buyers = generateBuyerSession(user?.id, selectedBond.id, selectedBond, taskIndex);
     localStorage.setItem('bondify_active_bond', JSON.stringify({
       bond: selectedBond,
       buyers,
       vipLevel,
-      taskIndex: (taskState.completedToday ?? 0) + 1,
+      taskIndex,
       bondsPerDay,
     }));
     setSelectedBond(null);

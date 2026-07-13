@@ -124,38 +124,55 @@ export const DEMO_BONDS = {
   ],
 };
 
-// Pool of 30 buyers — 3 are picked per task session, different per user via seeded PRNG
+// Pool of 40 international buyers — 3 are picked per task, different per task via seeded PRNG
 export const BUYER_POOL = [
-  { name: 'John Mugabi', company: 'Kampala Trading Co' },
-  { name: 'Sarah Nakato', company: 'Nile Business Holdings' },
-  { name: 'Grace Akello', company: 'Victoria Investment Group' },
-  { name: 'Robert Ssebugwawo', company: 'Pearl Finance Corp' },
-  { name: 'Fatuma Hassan', company: 'Crescent Trading Ltd' },
-  { name: 'David Ochieng', company: 'East Lake Capital' },
-  { name: 'James Otieno', company: 'Atlas Capital Corp' },
-  { name: 'Catherine Namuli', company: 'Horizon Securities Ltd' },
-  { name: 'Michael Okello', company: 'Pinnacle Finance Group' },
-  { name: 'Elizabeth Nanteza', company: 'Meridian Investment Corp' },
-  { name: 'George Asiimwe', company: 'Continental Business Holdings' },
-  { name: 'Patricia Adong', company: 'Summit Capital Ltd' },
-  { name: 'Richard Tumwebaze', company: 'Pan-Africa Capital Group' },
-  { name: 'Agnes Mutesi', company: 'Great Lakes Investment Bank' },
-  { name: 'Emmanuel Kato', company: 'East Africa Securities Corp' },
-  { name: 'Josephine Akwi', company: 'African Development Capital' },
-  { name: 'Henry Muzaale', company: 'Rift Valley Finance Corp' },
-  { name: 'Miriam Nagawa', company: 'Continental Trading Holdings' },
-  { name: 'Simon Ouma', company: 'African Investment Authority' },
-  { name: 'Stella Ahimbisibwe', company: 'National Sovereign Fund' },
-  { name: 'Omar Abdullah', company: 'Sahara Capital Partners' },
-  { name: 'Kwame Asante', company: 'African Development Alliance' },
-  { name: 'Fatou Diallo', company: 'West Africa Capital Corp' },
-  { name: 'Ibrahim Al-Rashid', company: 'North Africa Finance Group' },
-  { name: 'Alexander Rothschild', company: 'Global Asset Management' },
-  { name: 'Victoria Chen', company: 'Pacific Investment Group' },
-  { name: 'Mohammed Al-Maktoum', company: 'Gulf Capital Alliance' },
-  { name: 'Sophia Anderson', company: 'World Asset Corporation' },
-  { name: 'Carlos Mendez', company: 'International Trade Finance' },
-  { name: 'Pierre Dubois', company: 'European Investment Authority' },
+  // Australian
+  { name: 'James Mitchell',    company: 'Mitchell Capital Partners' },
+  { name: 'Sarah Thompson',    company: 'Pacific Coast Securities' },
+  { name: 'Robert Clarke',     company: 'Clarke Asset Management' },
+  { name: 'Emma Wilson',       company: 'Southern Cross Investments' },
+  { name: 'Oliver Harrison',   company: 'Harrison Investment Group' },
+  { name: 'Jessica Park',      company: 'Harbour View Capital' },
+  { name: 'Andrew Brooks',     company: 'Sydney Trade Finance' },
+  { name: 'Natalie Roberts',   company: 'Sunrise Wealth Management' },
+  { name: 'Michael Foster',    company: 'Foster Capital Group' },
+  { name: 'Lauren Scott',      company: 'Canberra Securities Ltd' },
+  { name: 'Daniel Hughes',     company: 'Melbourne Bond Authority' },
+  { name: 'Amy Turner',        company: 'Gold Coast Capital Corp' },
+  // American
+  { name: 'William Anderson',  company: 'Anderson Global Fund' },
+  { name: 'Thomas Wright',     company: 'Manhattan Investment Corp' },
+  { name: 'Samuel Johnson',    company: 'Liberty Bond Authority' },
+  { name: 'Amelia Davis',      company: 'Atlantic Investment Group' },
+  { name: 'Christopher Moore', company: 'Wall Street Capital LLC' },
+  { name: 'Rachel Adams',      company: 'Apex Securities Corp' },
+  // European
+  { name: 'Catherine Laurent', company: 'European Capital Alliance' },
+  { name: 'Henry Baker',       company: 'London Securities Ltd' },
+  { name: 'Olivia Schmidt',    company: 'Deutsche Capital Partners' },
+  { name: 'Sophie Martin',     company: 'Paris Asset Management' },
+  { name: 'Alexander Petrov',  company: 'Nordic Investment Fund' },
+  { name: 'Isabella Romano',   company: 'Roma Capital Group' },
+  { name: 'Marco Van der Berg',company: 'Amsterdam Finance Corp' },
+  // Asian
+  { name: 'David Chen',        company: 'Asia Pacific Finance Corp' },
+  { name: 'Liu Wei',           company: 'Dragon Capital Corp' },
+  { name: 'Priya Sharma',      company: 'Mumbai Finance Group' },
+  { name: 'Kenji Tanaka',      company: 'Tokyo Asset Management' },
+  { name: 'Mei Zhang',         company: 'Shanghai Investment Corp' },
+  { name: 'Ravi Patel',        company: 'India Capital Partners' },
+  { name: 'Min-Jun Lee',       company: 'Korea Pacific Securities' },
+  { name: 'Aisha Ng',          company: 'Singapore Wealth Fund' },
+  // Gulf / Middle East
+  { name: 'Hassan Al-Rashid',  company: 'Gulf Capital Alliance' },
+  { name: 'Fatima Al-Zahra',   company: 'MENA Investment Authority' },
+  { name: 'Khalid Al-Farsi',   company: 'Abu Dhabi Asset Group' },
+  // Latin America
+  { name: 'Carlos Fernandez',  company: 'Iberian Capital Group' },
+  { name: 'Victoria Nguyen',   company: 'Pacific Rim Capital' },
+  // Other international
+  { name: 'Marcus Williams',   company: 'Global Trade Finance Ltd' },
+  { name: 'Elena Volkov',      company: 'International Bond Corp' },
 ];
 
 // Fast seeded PRNG — same seed = same buyers, so page refreshes are stable
@@ -175,20 +192,13 @@ function mulberry32(seed) {
 }
 
 /**
- * Generates 3 unique buyers with correct pricing for a given user + bond + date.
- *
- * Buyer price model:
- *   buyer_price = face_value + trust_fee + net_profit
- *   → Admin takes face_value back
- *   → User receives: trust_fee (returned) + net_profit
- *   → Net wallet gain for user = net_profit
- *
- * Prices vary ±12% from base tiers so each user sees different numbers.
- * Seed = userId + bondId + today's date → stable per session, different per user.
+ * Generates 3 unique buyers with correct pricing.
+ * Seed includes taskIndex so each task invocation produces different buyers
+ * even when the same bond is used multiple times in one day.
  */
-export function generateBuyerSession(userId, bondId, bond) {
+export function generateBuyerSession(userId, bondId, bond, taskIndex = 0) {
   const date = new Date().toDateString();
-  const seed = hashCode(`${userId || 'demo'}-${bondId}-${date}`);
+  const seed = hashCode(`${userId || 'demo'}-${bondId}-${date}-t${taskIndex}`);
   const rand = mulberry32(seed);
 
   // Pick 3 unique buyers from pool
