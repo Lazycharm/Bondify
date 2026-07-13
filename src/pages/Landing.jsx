@@ -14,10 +14,6 @@ import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { VIP_LEVELS, formatUGXShort } from '@/lib/vipData';
 
-// Replace HERO_VIDEO_SRC with your actual video file path or URL
-// e.g. '/videos/hero.mp4' or an external CDN URL
-const HERO_VIDEO_SRC = '';
-
 const STATS = [
   { label: 'Active Traders', value: 48250, suffix: '+', icon: Users },
   { label: 'Bonds Sold', value: 127800, suffix: '+', icon: TrendingUp },
@@ -42,7 +38,6 @@ const HOW_IT_WORKS = [
 export default function Landing() {
   const { user } = useAuth();
   const statsRef = useRef(null);
-  const videoRef = useRef(null);
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -51,25 +46,25 @@ export default function Landing() {
 
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Video hero — falls back to static image if no src */}
-        {HERO_VIDEO_SRC ? (
-          <video
-            ref={videoRef}
-            src={HERO_VIDEO_SRC}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            poster="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
+        {/* YouTube background video — muted, looped, no controls */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <iframe
+            src="https://www.youtube.com/embed/vAdn7aLHpO0?autoplay=1&mute=1&loop=1&playlist=vAdn7aLHpO0&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            title="Hero background"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'max(100vw, 177.78vh)',
+              height: 'max(100vh, 56.25vw)',
+              border: 'none',
+              pointerEvents: 'none',
+            }}
           />
-        ) : (
-          <img
-            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
+        </div>
 
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-navy/90 via-emerald-950/85 to-navy/90 animate-gradient" />
