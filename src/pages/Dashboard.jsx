@@ -1,132 +1,114 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Wallet, TrendingUp, Crown, CheckSquare, Users, Clock,
-  Gift, Calendar, ArrowUpRight, ArrowDownLeft, Plus, Eye,
+  Gift, Calendar, ArrowUpRight, Plus, Eye, EyeOff,
+  ChevronRight, Sparkles,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
-import CountUp from '@/components/ui/count-up';
 import { CelebrationOverlay } from '@/components/ui/Celebration';
-import { formatUGX, formatUGXShort } from '@/lib/vipData';
+import { useAuth } from '@/lib/AuthContext';
+import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
-import {
-  AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip,
-} from 'recharts';
 
-const WALLET_CARDS = [
-  { label: 'Wallet Balance', value: 845000, icon: Wallet, color: 'from-emerald-500 to-teal-600', decimals: 0 },
-  { label: "Today's Profit", value: 12500, icon: TrendingUp, color: 'from-green-400 to-emerald-500', decimals: 0 },
-  { label: 'Current VIP', value: 2, icon: Crown, color: 'from-amber-400 to-yellow-500', suffix: ' · Bronze' },
-  { label: 'Tasks Remaining', value: 3, icon: CheckSquare, color: 'from-sky-400 to-blue-500', suffix: '/ 8' },
-  { label: 'Referral Earnings', value: 45000, icon: Users, color: 'from-violet-400 to-purple-500', decimals: 0 },
-  { label: 'Pending Withdrawal', value: 0, icon: Clock, color: 'from-rose-400 to-red-500', decimals: 0 },
-];
-
-const GROWTH_DATA = [
-  { day: 'Mon', value: 42000 }, { day: 'Tue', value: 48000 },
-  { day: 'Wed', value: 55000 }, { day: 'Thu', value: 51000 },
-  { day: 'Fri', value: 67000 }, { day: 'Sat', value: 78000 },
-  { day: 'Sun', value: 84500 },
-];
-
-const RECENT_TX = [
-  { type: 'profit', desc: 'Daily bond profit', amount: 12500, time: '2h ago', icon: ArrowUpRight },
-  { type: 'investment', desc: '91-Day T-Bill purchased', amount: -50000, time: '5h ago', icon: ArrowDownLeft },
-  { type: 'referral', desc: 'Referral commission (L1)', amount: 1750, time: '8h ago', icon: ArrowUpRight },
-  { type: 'checkin', desc: 'Daily check-in reward', amount: 300, time: '1d ago', icon: Gift },
-];
-
-const BANNERS = [
-  { title: '5-Year Infrastructure Bond', subtitle: 'Limited offer · 14.5% yield', color: 'from-emerald-500 to-teal-700', image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=80' },
-  { title: 'Weekend Withdrawals Open', subtitle: 'Saturday & Sunday only', color: 'from-amber-500 to-orange-600', image: 'https://images.unsplash.com/photo-1565514020179-026b92b84bb6?w=1200&q=80' },
-  { title: 'Gift Code: TREASURY100', subtitle: 'Claim your bonus today', color: 'from-violet-500 to-purple-700', image: 'https://images.unsplash.com/photo-1633158829585-23ba8f7c0caf?w=1200&q=80' },
+const STAT_CARDS = [
+  { label: 'Wallet Balance', value: 0, icon: Wallet, color: 'from-emerald-500 to-teal-600', prefix: 'UGX ' },
+  { label: "Today's Profit", value: 0, icon: TrendingUp, color: 'from-green-400 to-emerald-500', prefix: 'UGX ' },
+  { label: 'Current VIP', value: '1 · Starter', icon: Crown, color: 'from-amber-400 to-yellow-500' },
+  { label: 'Tasks Today', value: '0 / 3', icon: CheckSquare, color: 'from-sky-400 to-blue-500' },
+  { label: 'Referral Earnings', value: 0, icon: Users, color: 'from-violet-400 to-purple-500', prefix: 'UGX ' },
+  { label: 'Pending Withdrawal', value: 0, icon: Clock, color: 'from-rose-400 to-red-500', prefix: 'UGX ' },
 ];
 
 export default function Dashboard() {
-  const [bannerIdx, setBannerIdx] = useState(0);
-  const [celebrate, setCelebrate] = useState(false);
+  const { user } = useAuth();
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
 
-  // auto-rotate banners
+  const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Trader';
+
+  // Show welcome overlay once per browser session (first login/signup landing)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerIdx((i) => (i + 1) % BANNERS.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    const key = 'bondify_welcomed';
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, '1');
+      setCelebrate(true);
+    }
   }, []);
-
-  const banner = BANNERS[bannerIdx];
 
   return (
     <div className="space-y-6">
       <CelebrationOverlay
         show={celebrate}
-        title="Welcome back!"
-        subtitle="Your portfolio grew by UGX 12,500 today"
+        title={`Welcome to Bondify, ${displayName}!`}
+        subtitle="Your account is ready. Start trading treasury bonds today."
         onClose={() => setCelebrate(false)}
-        autoDismiss={3000}
+        autoDismiss={3500}
       />
 
-      {/* Hero banner (auto-changing) */}
+      {/* Welcome header */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-2xl font-bold">Welcome, {displayName} 👋</h1>
+        <p className="text-sm text-muted-foreground mt-1">Your Bondify account is ready. Start by depositing funds or completing your first task.</p>
+      </motion.div>
+
+      {/* Get started banner */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl h-44 sm:h-52"
+        transition={{ delay: 0.05 }}
+        className="relative overflow-hidden rounded-2xl"
       >
-        <img src={banner.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className={`absolute inset-0 bg-gradient-to-r ${banner.color} animate-gradient opacity-80`} />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent" />
-        <div className="relative z-10 p-6 sm:p-8 h-full flex flex-col justify-between">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700" />
+        <div className="relative z-10 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <motion.div
-              key={bannerIdx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">{banner.title}</h2>
-              <p className="text-white/80 mt-1">{banner.subtitle}</p>
-            </motion.div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={16} className="text-emerald-300" />
+              <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Get started</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Make your first trade</h2>
+            <p className="text-white/70 text-sm mt-1">Deposit funds to start buying and selling treasury bonds.</p>
           </div>
-          <div className="flex gap-1.5">
-            {BANNERS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setBannerIdx(i); playSound('click'); }}
-                className={`h-1.5 rounded-full transition-all ${i === bannerIdx ? 'w-8 bg-white' : 'w-1.5 bg-white/40'}`}
-              />
-            ))}
-          </div>
+          <Link
+            to="/dashboard/tasks"
+            onClick={() => playSound('click')}
+            className="flex items-center gap-2 bg-white text-emerald-700 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-emerald-50 transition-colors shrink-0"
+          >
+            Start Trading <ChevronRight size={16} />
+          </Link>
         </div>
       </motion.div>
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Deposit', icon: Plus, action: () => { playSound('success'); setCelebrate(true); } },
-          { label: 'Withdraw', icon: ArrowUpRight, action: () => playSound('click') },
-          { label: 'Daily Gift', icon: Gift, action: () => playSound('click') },
-          { label: 'Check-in', icon: Calendar, action: () => { playSound('coin'); setCelebrate(true); } },
+          { label: 'Deposit', icon: Plus, to: '/dashboard/wallet' },
+          { label: 'Withdraw', icon: ArrowUpRight, to: '/dashboard/withdrawals' },
+          { label: 'Daily Gift', icon: Gift, to: '/dashboard/gift' },
+          { label: 'Check-in', icon: Calendar, to: '/dashboard/gift' },
         ].map((a) => (
-          <MagneticButton
-            key={a.label}
-            onClick={a.action}
-            strength={0.2}
-            className="py-3 rounded-xl glass font-medium text-sm flex items-center justify-center gap-2 text-foreground"
-          >
-            <a.icon size={16} /> {a.label}
-          </MagneticButton>
+          <Link key={a.label} to={a.to}>
+            <MagneticButton
+              onClick={() => playSound('click')}
+              strength={0.2}
+              className="w-full py-3 rounded-xl glass font-medium text-sm flex items-center justify-center gap-2 text-foreground"
+            >
+              <a.icon size={16} /> {a.label}
+            </MagneticButton>
+          </Link>
         ))}
       </div>
 
-      {/* Wallet cards grid */}
+      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {WALLET_CARDS.map((card, i) => (
+        {STAT_CARDS.map((card, i) => (
           <motion.div
             key={card.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
+            transition={{ delay: i * 0.06 }}
           >
             <GlassCard glow hover className="h-full">
               <div className="flex items-start justify-between mb-3">
@@ -135,97 +117,46 @@ export default function Dashboard() {
                 </div>
                 {card.label === 'Wallet Balance' && (
                   <button onClick={() => setBalanceHidden((h) => !h)} className="text-muted-foreground hover:text-foreground">
-                    <Eye size={16} />
+                    {balanceHidden ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{card.label}</p>
               <p className="text-2xl font-bold mt-1">
-                {balanceHidden && card.label === 'Wallet Balance' ? '••••••' : (
-                  card.label.includes('VIP') || card.label.includes('Tasks') ? (
-                    <CountUp value={card.value} suffix={card.suffix || ''} />
-                  ) : (
-                    <CountUp value={card.value} prefix="UGX " />
-                  )
-                )}
+                {balanceHidden && card.label === 'Wallet Balance'
+                  ? '••••••'
+                  : typeof card.value === 'number'
+                    ? `${card.prefix ?? ''}${formatUGX(card.value).replace('UGX ', '')}`
+                    : card.value}
               </p>
             </GlassCard>
           </motion.div>
         ))}
       </div>
 
-      {/* Chart + Recent transactions */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Growth chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="lg:col-span-2"
-        >
-          <GlassCard hover={false} className="h-full">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold">Investment Growth</h3>
-                <p className="text-xs text-muted-foreground">Last 7 days · sample data</p>
-              </div>
-              <span className="text-emerald-500 font-semibold text-sm flex items-center gap-1">
-                <TrendingUp size={14} /> +101%
-              </span>
+      {/* Recent transactions — empty state */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <GlassCard hover={false}>
+          <h3 className="font-semibold mb-4">Recent Transactions</h3>
+          <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <Wallet size={24} className="text-muted-foreground" />
             </div>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={GROWTH_DATA}>
-                  <defs>
-                    <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => formatUGXShort(v).replace('UGX ', '')} />
-                  <Tooltip
-                    contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }}
-                    formatter={(v) => [formatUGX(v), 'Balance']}
-                  />
-                  <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2.5} fill="url(#growthGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div>
+              <p className="font-medium text-sm">No transactions yet</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Your bond sales and deposits will appear here.</p>
             </div>
-          </GlassCard>
-        </motion.div>
+            <Link
+              to="/dashboard/wallet"
+              onClick={() => playSound('click')}
+              className="text-sm font-medium text-emerald-500 hover:text-emerald-400 flex items-center gap-1"
+            >
+              Make your first deposit <ChevronRight size={14} />
+            </Link>
+          </div>
+        </GlassCard>
+      </motion.div>
 
-        {/* Recent transactions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <GlassCard hover={false} className="h-full">
-            <h3 className="font-semibold mb-4">Recent Transactions</h3>
-            <div className="space-y-3">
-              {RECENT_TX.map((tx, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
-                    <tx.icon size={16} className={tx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{tx.desc}</p>
-                    <p className="text-xs text-muted-foreground">{tx.time}</p>
-                  </div>
-                  <span className={`text-sm font-semibold ${tx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {tx.amount > 0 ? '+' : ''}{formatUGX(tx.amount)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-        </motion.div>
-      </div>
-
-      <p className="text-center text-xs text-muted-foreground pt-2">
-        Sample demo data — all balances and figures shown are illustrative.
-      </p>
     </div>
   );
 }

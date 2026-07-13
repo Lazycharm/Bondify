@@ -4,11 +4,9 @@ import { supabase } from "@/api/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { UserPlus, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -16,8 +14,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,9 +25,13 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin + '/dashboard' },
+      });
       if (error) throw error;
-      setShowOtp(true);
+      setEmailSent(true);
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
@@ -38,88 +39,41 @@ export default function Register() {
     }
   };
 
-  const handleVerify = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
-      if (error) throw error;
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "Invalid verification code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setError("");
-    try {
-      const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) throw error;
-      toast({ title: "Code sent", description: "Check your email for the new code." });
-    } catch (err) {
-      setError(err.message || "Failed to resend code");
-    }
-  };
-
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/' },
+      options: { redirectTo: window.location.origin + '/dashboard' },
     });
   };
 
-  if (showOtp) {
+  if (emailSent) {
     return (
       <AuthLayout
         icon={Mail}
-        title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
+        title="Check your email"
+        subtitle={`We sent a verification link to ${email}`}
       >
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-            {error}
+        <div className="flex flex-col items-center text-center gap-4 py-4">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
-        )}
-        <div className="flex justify-center mb-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={setOtpCode}
-            autoFocus
-            autoComplete="one-time-code"
-          >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
+          <div className="space-y-1">
+            <p className="font-semibold text-foreground">{email}</p>
+            <p className="text-sm text-muted-foreground">
+              Click the link in your email to activate your account and get started.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground pt-2">
+            No email? Check your spam folder or{" "}
+            <button
+              onClick={() => setEmailSent(false)}
+              className="text-primary font-medium hover:underline"
+            >
+              try again
+            </button>
+            .
+          </p>
         </div>
-        <Button
-          className="w-full h-12 font-medium"
-          onClick={handleVerify}
-          disabled={loading || otpCode.length < 6}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            "Verify"
-          )}
-        </Button>
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
-          </button>
-        </p>
       </AuthLayout>
     );
   }

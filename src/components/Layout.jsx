@@ -48,10 +48,10 @@ export default function Layout() {
     <div className="flex flex-col h-full">
       <Link to="/" className="flex items-center gap-2 px-2 py-1 mb-6">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/30">
-          T
+          B
         </div>
         <span className="font-bold tracking-tight">
-          Treasury<span className="text-emerald-500">Bonds</span>
+          Bondi<span className="text-emerald-500">fy</span>
         </span>
       </Link>
 
@@ -131,7 +131,7 @@ export default function Layout() {
             <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 -ml-2">
               <Menu size={20} />
             </button>
-            <span className="lg:hidden font-bold">TreasuryBonds</span>
+            <span className="lg:hidden font-bold">Bondify</span>
           </div>
 
           {/* Right: controls + account */}

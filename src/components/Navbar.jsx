@@ -28,10 +28,10 @@ export default function Navbar() {
         <div className="glass rounded-2xl px-5 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/30 group-hover:scale-105 transition-transform">
-              T
+              B
             </div>
             <span className="font-bold text-lg tracking-tight hidden sm:block">
-              Treasury<span className="text-emerald-500">Bonds</span>
+              Bondi<span className="text-emerald-500">fy</span>
             </span>
           </Link>
 
@@ -60,7 +60,7 @@ export default function Navbar() {
               onClick={() => {}}
               className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/30"
             >
-              <Link to="/dashboard" className="text-white">Start Investing</Link>
+              <Link to="/register" className="text-white">Start Trading</Link>
             </MagneticButton>
           </div>
         </div>
