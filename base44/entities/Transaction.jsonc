@@ -1,0 +1,57 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "deposit",
+        "withdrawal",
+        "investment",
+        "profit",
+        "bonus",
+        "referral",
+        "gift",
+        "checkin"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "UGX"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "rejected"
+      ],
+      "default": "completed"
+    },
+    "description": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "MTN Mobile Money",
+        "Airtel Money",
+        "Bank Transfer",
+        "Bonus",
+        "System"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "amount"
+  ]
+}

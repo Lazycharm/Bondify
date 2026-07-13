@@ -1,0 +1,29 @@
+{
+  "name": "CheckIn",
+  "type": "object",
+  "properties": {
+    "streak_days": {
+      "type": "integer",
+      "default": 0
+    },
+    "last_checkin_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "total_checkins": {
+      "type": "integer",
+      "default": 0
+    },
+    "reward_today": {
+      "type": "number",
+      "default": 300
+    },
+    "milestones_reached": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "required": []
+}

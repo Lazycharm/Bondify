@@ -1,0 +1,44 @@
+{
+  "name": "BondTask",
+  "type": "object",
+  "properties": {
+    "bond_id": {
+      "type": "string"
+    },
+    "bond_name": {
+      "type": "string"
+    },
+    "vip_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "investment_amount": {
+      "type": "number"
+    },
+    "estimated_return": {
+      "type": "number"
+    },
+    "reward": {
+      "type": "number"
+    },
+    "maturity_days": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "bond_name"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referral_code": {
+      "type": "string"
+    },
+    "total_referrals": {
+      "type": "integer",
+      "default": 0
+    },
+    "level_1_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "level_2_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "level_3_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "leaderboard_rank": {
+      "type": "integer",
+      "default": 0
+    }
+  },
+  "required": [
+    "referral_code"
+  ]
+}

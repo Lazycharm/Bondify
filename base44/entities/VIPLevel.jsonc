@@ -1,0 +1,39 @@
+{
+  "name": "VIPLevel",
+  "type": "object",
+  "properties": {
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "name": {
+      "type": "string"
+    },
+    "min_investment": {
+      "type": "number"
+    },
+    "daily_tasks": {
+      "type": "integer"
+    },
+    "daily_earnings_min": {
+      "type": "number"
+    },
+    "daily_earnings_max": {
+      "type": "number"
+    },
+    "perks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "color": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "level",
+    "min_investment"
+  ]
+}

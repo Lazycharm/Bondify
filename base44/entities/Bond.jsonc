@@ -1,0 +1,56 @@
+{
+  "name": "Bond",
+  "type": "object",
+  "properties": {
+    "bond_name": {
+      "type": "string"
+    },
+    "bond_type": {
+      "type": "string",
+      "enum": [
+        "Treasury Bill",
+        "Treasury Bond",
+        "Savings Bond",
+        "Infrastructure Bond"
+      ]
+    },
+    "vip_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "investment_amount": {
+      "type": "number"
+    },
+    "maturity_days": {
+      "type": "integer"
+    },
+    "estimated_return": {
+      "type": "number"
+    },
+    "reward": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "active",
+        "completed",
+        "pending"
+      ],
+      "default": "available"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "bond_name",
+    "investment_amount"
+  ]
+}

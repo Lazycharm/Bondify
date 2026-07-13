@@ -1,0 +1,33 @@
+{
+  "name": "GiftCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "reward_amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "claimed",
+        "expired"
+      ],
+      "default": "available"
+    },
+    "claimed_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "code",
+    "reward_amount"
+  ]
+}

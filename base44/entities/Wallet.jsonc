@@ -1,0 +1,35 @@
+{
+  "name": "Wallet",
+  "type": "object",
+  "properties": {
+    "main_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "bonus_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "referral_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "pending_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "withdrawable_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "total_invested": {
+      "type": "number",
+      "default": 0
+    },
+    "today_profit": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": []
+}
