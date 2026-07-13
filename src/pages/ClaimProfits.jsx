@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, CheckCircle2, Clock, Wallet, ChevronRight, PartyPopper, Gift } from 'lucide-react';
 import { formatUGX } from '@/lib/vipData';
-import { unlockBonusWithdrawal, isBonusWithdrawable, getBonusBalance } from '@/lib/depositStore';
+import { unlockBonusWithdrawal, isBonusWithdrawable, getBonusBalance, addGiftCredit } from '@/lib/depositStore';
 
 const CONFETTI_COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'];
 
@@ -80,6 +80,9 @@ export default function ClaimProfits() {
   function handleClaim() {
     if (claimed) return;
     setClaimed(true);
+
+    // Credit net profit to wallet
+    addGiftCredit(netProfit);
 
     // Update task state
     const next = { ...taskState };

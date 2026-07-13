@@ -41,6 +41,7 @@ import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminDeposits from '@/pages/admin/AdminDeposits';
 import AdminWithdrawals from '@/pages/admin/AdminWithdrawals';
+import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminSettings from '@/pages/admin/AdminSettings';
 
 function App() {
@@ -90,6 +91,7 @@ function App() {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/deposits" element={<AdminDeposits />} />
                   <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
                   <Route path="/admin/settings" element={<AdminSettings />} />
                 </Route>
               </Route>
