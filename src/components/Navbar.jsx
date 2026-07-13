@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Volume2, VolumeX } from 'lucide-react';
+import { Sun, Moon, Volume2, VolumeX, LayoutDashboard } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
+import { useAuth } from '@/lib/AuthContext';
 import { isMuted, setMuted, playSound } from '@/lib/sound';
 import MagneticButton from '@/components/ui/MagneticButton';
 
 export default function Navbar() {
   const { theme, toggle } = useTheme();
+  const { user } = useAuth();
   const [muted, setMutedState] = useState(isMuted());
 
   const toggleMute = () => {
@@ -60,7 +62,13 @@ export default function Navbar() {
               onClick={() => {}}
               className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/30"
             >
-              <Link to="/register" className="text-white">Start Trading</Link>
+              {user ? (
+                <Link to="/dashboard" className="flex items-center gap-1.5 text-white">
+                  <LayoutDashboard size={15} /> Dashboard
+                </Link>
+              ) : (
+                <Link to="/register" className="text-white">Earn with Bonds</Link>
+              )}
             </MagneticButton>
           </div>
         </div>

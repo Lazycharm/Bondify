@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/lib/AuthContext';
 import {
   TrendingUp, Shield, Zap, Gift, Crown, ArrowRight, Play,
   CheckCircle2, Users, Wallet, BarChart3, HandCoins,
@@ -39,6 +40,7 @@ const HOW_IT_WORKS = [
 ];
 
 export default function Landing() {
+  const { user } = useAuth();
   const statsRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -59,11 +61,11 @@ export default function Landing() {
             loop
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            poster="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80"
+            poster="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
           />
         ) : (
           <img
-            src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80"
+            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -111,22 +113,35 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <MagneticButton
-              onClick={() => {}}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-lg shadow-2xl shadow-emerald-500/40 flex items-center gap-2"
-            >
-              <Link to="/register" className="flex items-center gap-2 text-white">
-                Start Trading Free <ArrowRight size={20} />
-              </Link>
-            </MagneticButton>
-            <MagneticButton
-              onClick={() => {}}
-              className="px-8 py-4 rounded-2xl glass-strong text-white font-semibold text-lg flex items-center gap-2"
-            >
-              <Link to="/login" className="flex items-center gap-2 text-white">
-                <Play size={18} /> Sign In
-              </Link>
-            </MagneticButton>
+            {user ? (
+              <MagneticButton
+                onClick={() => {}}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-lg shadow-2xl shadow-emerald-500/40 flex items-center gap-2"
+              >
+                <Link to="/dashboard" className="flex items-center gap-2 text-white">
+                  Go to Dashboard <ArrowRight size={20} />
+                </Link>
+              </MagneticButton>
+            ) : (
+              <>
+                <MagneticButton
+                  onClick={() => {}}
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-lg shadow-2xl shadow-emerald-500/40 flex items-center gap-2"
+                >
+                  <Link to="/register" className="flex items-center gap-2 text-white">
+                    Earn with Bonds <ArrowRight size={20} />
+                  </Link>
+                </MagneticButton>
+                <MagneticButton
+                  onClick={() => {}}
+                  className="px-8 py-4 rounded-2xl glass-strong text-white font-semibold text-lg flex items-center gap-2"
+                >
+                  <Link to="/login" className="flex items-center gap-2 text-white">
+                    <Play size={18} /> Sign In
+                  </Link>
+                </MagneticButton>
+              </>
+            )}
           </motion.div>
 
           {/* Floating bond chips */}
