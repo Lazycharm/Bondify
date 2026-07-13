@@ -62,7 +62,7 @@ export default function DepositGateway() {
             <Phone size={16} className="text-muted-foreground" />
             <input
               type="tel"
-              placeholder="e.g. 0707012381"
+              placeholder="e.g. 0701 000 000"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"

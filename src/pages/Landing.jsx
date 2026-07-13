@@ -324,6 +324,33 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* BONUS BANNER */}
+      <section className="py-12 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 to-yellow-500 p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-10"
+          >
+            <div className="text-5xl sm:text-6xl shrink-0">🎁</div>
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white">Get UGX 10,000 free when you join</h3>
+              <p className="text-white/80 mt-2 text-sm sm:text-base max-w-md">
+                Every new member gets a UGX 10,000 welcome bonus on their first deposit.
+                Complete your first day of bond tasks and it's yours — fully withdrawable, no catch.
+              </p>
+            </div>
+            <Link
+              to="/register"
+              className="shrink-0 px-7 py-3.5 rounded-2xl bg-white text-amber-600 font-bold text-sm hover:bg-amber-50 transition-colors shadow-xl whitespace-nowrap"
+            >
+              Claim Your Bonus →
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">

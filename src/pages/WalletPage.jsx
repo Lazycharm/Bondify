@@ -8,7 +8,7 @@ import {
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
-import { getWalletBalance, getUserDeposits } from '@/lib/depositStore';
+import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
@@ -26,12 +26,16 @@ function formatDate(iso) {
 export default function WalletPage() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
+  const [bonus, setBonus] = useState(0);
+  const [bonusUnlocked, setBonusUnlocked] = useState(false);
   const [deposits, setDeposits] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     setBalance(getWalletBalance());
+    setBonus(getBonusBalance());
+    setBonusUnlocked(isBonusWithdrawable());
     if (user?.id) {
       setDeposits(getUserDeposits(user.id));
       setWithdrawals(getUserWithdrawals(user.id));
@@ -49,7 +53,7 @@ export default function WalletPage() {
 
   const balanceCards = [
     { label: 'Main Balance', value: balance, icon: Wallet, color: 'from-emerald-500 to-teal-600' },
-    { label: 'Bonus Balance', value: 10000, icon: Gift, color: 'from-amber-400 to-yellow-500' },
+    { label: 'Welcome Bonus', value: bonus, icon: Gift, color: 'from-amber-400 to-yellow-500', sub: bonusUnlocked ? 'Withdrawable' : 'Unlocks after Day 1 tasks' },
     { label: 'Referral Earnings', value: 0, icon: Users, color: 'from-violet-400 to-purple-500' },
     { label: 'Pending Deposits', value: deposits.filter((d) => d.status === 'pending').reduce((s, d) => s + d.amount, 0), icon: Clock, color: 'from-rose-400 to-red-500' },
   ];
@@ -81,6 +85,7 @@ export default function WalletPage() {
               </div>
               <p className="text-xs text-muted-foreground">{b.label}</p>
               <p className="text-xl font-bold mt-1">{formatUGX(b.value)}</p>
+              {b.sub && <p className={`text-[10px] mt-0.5 font-medium ${bonusUnlocked && b.sub === 'Withdrawable' ? 'text-emerald-500' : 'text-amber-500'}`}>{b.sub}</p>}
             </GlassCard>
           </motion.div>
         ))}
@@ -90,8 +95,11 @@ export default function WalletPage() {
       <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 text-sm flex items-start gap-3">
         <Gift className="text-amber-500 shrink-0 mt-0.5" size={18} />
         <p className="text-foreground/80">
-          <span className="font-semibold text-amber-500">Bonus rule:</span> Your UGX 10,000 registration bonus becomes
-          withdrawable only after you deposit at least UGX 20,000 and meet all platform terms.
+          <span className="font-semibold text-amber-500">Welcome Bonus — UGX 10,000:</span>{' '}
+          {bonusUnlocked
+            ? 'Your bonus is unlocked and ready to withdraw — nice work completing Day 1!'
+            : 'Your UGX 10,000 welcome bonus is credited on your first approved deposit. It unlocks for withdrawal once you complete all bond tasks on Day 1.'
+          }
         </p>
       </div>
 

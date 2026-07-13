@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, CheckCircle2, Clock, Wallet, ChevronRight, PartyPopper } from 'lucide-react';
+import { TrendingUp, CheckCircle2, Clock, Wallet, ChevronRight, PartyPopper, Gift } from 'lucide-react';
 import { formatUGX } from '@/lib/vipData';
+import { unlockBonusWithdrawal, isBonusWithdrawable, getBonusBalance } from '@/lib/depositStore';
 
 const CONFETTI_COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'];
 
@@ -90,10 +91,12 @@ export default function ClaimProfits() {
       setAllDone(true);
       next.countdownEnd = Date.now() + 24 * 60 * 60 * 1000; // 24h from now
 
+      // Unlock bonus withdrawal after completing day 1
+      if ((next.sessionDay ?? 1) === 1) unlockBonusWithdrawal();
+
       // Advance session day (cap at 7 then reset)
       if (next.sessionDay >= 7) {
         next.sessionDay = 1;
-        // Bump VIP would happen here via Supabase
       } else {
         next.sessionDay = (next.sessionDay ?? 1) + 1;
       }
@@ -220,6 +223,17 @@ export default function ClaimProfits() {
                 <p className="text-xs text-muted-foreground">Your profit is queued for processing.</p>
               </div>
             </div>
+
+            {/* Bonus unlock notification */}
+            {allDone && isBonusWithdrawable() && getBonusBalance() > 0 && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
+                <Gift size={20} className="text-amber-400 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm text-amber-400">Bonus Unlocked!</p>
+                  <p className="text-xs text-muted-foreground">Your UGX {getBonusBalance().toLocaleString()} welcome bonus is now withdrawable.</p>
+                </div>
+              </motion.div>
+            )}
 
             {/* 24h countdown if all daily tasks done */}
             {allDone && taskState.countdownEnd && (

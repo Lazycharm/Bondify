@@ -7,7 +7,7 @@ import {
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
-import { getWalletBalance } from '@/lib/depositStore';
+import { getWalletBalance, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { addWithdrawal, getUserWithdrawals } from '@/lib/withdrawalStore';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
@@ -31,6 +31,8 @@ function formatDate(iso) {
 export default function Withdrawals() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
+  const [bonus, setBonus] = useState(0);
+  const [bonusUnlocked, setBonusUnlocked] = useState(false);
   const [history, setHistory] = useState([]);
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('mtn');
@@ -40,17 +42,22 @@ export default function Withdrawals() {
 
   useEffect(() => {
     setBalance(getWalletBalance());
+    setBonus(getBonusBalance());
+    setBonusUnlocked(isBonusWithdrawable());
     if (user?.id) setHistory(getUserWithdrawals(user.id));
   }, [user]);
 
+  const totalWithdrawable = balance + (bonusUnlocked ? bonus : 0);
+
   const parsedAmount = parseFloat(amount) || 0;
   const MIN_WITHDRAWAL = 20000;
+  const availableBalance = totalWithdrawable;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     if (parsedAmount < MIN_WITHDRAWAL) { setError(`Minimum withdrawal is ${formatUGX(MIN_WITHDRAWAL)}`); return; }
-    if (parsedAmount > balance) { setError('Insufficient balance.'); return; }
+    if (parsedAmount > availableBalance) { setError('Insufficient balance.'); return; }
     if (!account.trim()) { setError('Please enter your account number.'); return; }
 
     const result = addWithdrawal({
@@ -87,7 +94,7 @@ export default function Withdrawals() {
       {/* Balance summary */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: 'Withdrawable Balance', value: balance, icon: Wallet, color: 'text-emerald-500' },
+          { label: 'Withdrawable Balance', value: availableBalance, icon: Wallet, color: 'text-emerald-500' },
           { label: 'Pending', value: pending, icon: Clock, color: 'text-amber-500' },
           { label: 'Total Withdrawn', value: totalWithdrawn, icon: ArrowUpRight, color: 'text-foreground' },
         ].map((card) => (
@@ -126,9 +133,15 @@ export default function Withdrawals() {
                   className="w-full px-4 py-2.5 rounded-xl bg-background/60 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs text-muted-foreground">Available: {formatUGX(balance)}</span>
-                  <button type="button" onClick={() => setAmount(String(balance))} className="text-xs text-emerald-500 hover:underline font-medium">Max</button>
+                  <span className="text-xs text-muted-foreground">
+                    Available: {formatUGX(availableBalance)}
+                    {bonusUnlocked && bonus > 0 && <span className="text-amber-500 ml-1">(incl. {formatUGX(bonus)} bonus)</span>}
+                  </span>
+                  <button type="button" onClick={() => setAmount(String(availableBalance))} className="text-xs text-emerald-500 hover:underline font-medium">Max</button>
                 </div>
+                {!bonusUnlocked && bonus > 0 && (
+                  <p className="text-[11px] text-amber-500 mt-1">+ {formatUGX(bonus)} bonus unlocks after you complete Day 1 tasks.</p>
+                )}
               </div>
 
               <div>

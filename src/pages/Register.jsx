@@ -84,7 +84,7 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
-      subtitle="Sign up to get started"
+      subtitle="Join the network — your UGX 10,000 welcome bonus is waiting"
       footer={
         <>
           Already have an account?{" "}
@@ -167,6 +167,13 @@ export default function Register() {
               required
             />
           </div>
+        </div>
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400">
+          <span className="text-base leading-none mt-0.5">🎁</span>
+          <p>
+            <span className="font-semibold">UGX 10,000 welcome bonus</span> — credited on your first deposit.
+            Sell your Day 1 bonds and it's yours to withdraw. No strings, just results.
+          </p>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
