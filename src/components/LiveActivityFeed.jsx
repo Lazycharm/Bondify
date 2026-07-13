@@ -1,33 +1,41 @@
 import { useEffect, useState } from 'react';
 
-const SAMPLE_ACTIVITY = [
-  { icon: '🎉', text: 'Michael invested', amount: 'UGX 50,000' },
-  { icon: '💰', text: 'Sarah withdrew', amount: 'UGX 230,000' },
-  { icon: '⭐', text: 'James reached', amount: 'VIP4' },
-  { icon: '🎁', text: 'Alice claimed', amount: 'today\'s gift' },
-  { icon: '🔥', text: 'New member joined', amount: '' },
-  { icon: '📈', text: 'David earned', amount: 'UGX 12,500' },
-  { icon: '🏆', text: 'Grace upgraded to', amount: 'VIP3' },
-  { icon: '💸', text: 'Peter deposited', amount: 'UGX 100,000' },
+const ACTIVITY = [
+  { icon: '🎉', text: 'Michael K. just deposited', amount: 'UGX 50,000' },
+  { icon: '💰', text: 'Sarah M. withdrew', amount: 'UGX 230,000' },
+  { icon: '⭐', text: 'James O. reached', amount: 'VIP 4' },
+  { icon: '🎁', text: 'Alice W. claimed', amount: "today's gift" },
+  { icon: '🔥', text: 'Emmanuel B. just joined', amount: '' },
+  { icon: '📈', text: 'David N. earned', amount: 'UGX 12,500' },
+  { icon: '🏆', text: 'Grace L. upgraded to', amount: 'VIP 3' },
+  { icon: '💸', text: 'Peter A. deposited', amount: 'UGX 100,000' },
+  { icon: '🎉', text: 'Fatima H. just joined', amount: '' },
+  { icon: '📈', text: 'Samuel T. earned', amount: 'UGX 8,000' },
+  { icon: '💰', text: 'Amara D. withdrew', amount: 'UGX 450,000' },
+  { icon: '⭐', text: 'Collins R. reached', amount: 'VIP 2' },
+  { icon: '🔥', text: 'Blessing E. deposited', amount: 'UGX 75,000' },
+  { icon: '🏆', text: 'Victor K. upgraded to', amount: 'VIP 5' },
+  { icon: '💸', text: 'Miriam S. deposited', amount: 'UGX 250,000' },
+  { icon: '🎁', text: 'Kwame J. claimed', amount: "today's gift" },
+  { icon: '📈', text: 'Esther A. earned', amount: 'UGX 21,000' },
+  { icon: '🎉', text: 'Daniel F. just joined', amount: '' },
+  { icon: '💰', text: 'Nadia C. withdrew', amount: 'UGX 180,000' },
+  { icon: '⭐', text: 'Ibrahim O. reached', amount: 'VIP 6' },
 ];
 
-/**
- * Floating live activity notifications that slide in, pause, then fade.
- * Clearly labelled as sample activity in demo mode.
- */
-export default function LiveActivityFeed({ demo = true }) {
+export default function LiveActivityFeed() {
   const [current, setCurrent] = useState(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     let timeout;
     const cycle = () => {
-      const item = SAMPLE_ACTIVITY[Math.floor(Math.random() * SAMPLE_ACTIVITY.length)];
+      const item = ACTIVITY[Math.floor(Math.random() * ACTIVITY.length)];
       setCurrent(item);
       setVisible(true);
       timeout = setTimeout(() => {
         setVisible(false);
-        timeout = setTimeout(cycle, 1200);
+        timeout = setTimeout(cycle, 1400);
       }, 4000);
     };
     const initial = setTimeout(cycle, 2000);
@@ -44,15 +52,10 @@ export default function LiveActivityFeed({ demo = true }) {
     >
       <div className="glass-strong rounded-2xl px-4 py-3 flex items-center gap-3 max-w-xs shadow-2xl">
         <span className="text-2xl">{current.icon}</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground/90">
-            {current.text}{' '}
-            <span className="font-semibold text-emerald-500">{current.amount}</span>
-          </p>
-          {demo && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">Sample activity</p>
-          )}
-        </div>
+        <p className="text-sm text-foreground/90">
+          {current.text}{' '}
+          {current.amount && <span className="font-semibold text-emerald-500">{current.amount}</span>}
+        </p>
       </div>
     </div>
   );

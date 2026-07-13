@@ -1,28 +1,48 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, QrCode, Share2, Trophy, Users } from 'lucide-react';
+import { Copy, Share2, Trophy, Users, CheckCircle2 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
-import CountUp from '@/components/ui/count-up';
 import { formatUGX } from '@/lib/vipData';
+import { getMyReferrals, getReferralLink, getL1Earnings, COMMISSION_RATES } from '@/lib/referralStore';
+import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
 
 const LEVELS = [
-  { level: 1, rate: 35, color: 'from-emerald-500 to-teal-600', count: 12, earnings: 21000 },
-  { level: 2, rate: 2, color: 'from-sky-400 to-blue-500', count: 34, earnings: 1360 },
-  { level: 3, rate: 1, color: 'from-violet-400 to-purple-500', count: 89, earnings: 890 },
-];
-
-const LEADERBOARD = [
-  { rank: 1, name: 'Grace K.', referrals: 248, earnings: 1250000 },
-  { rank: 2, name: 'David M.', referrals: 201, earnings: 980000 },
-  { rank: 3, name: 'Alice W.', referrals: 178, earnings: 760000 },
-  { rank: 4, name: 'You', referrals: 135, earnings: 45000, isYou: true },
-  { rank: 5, name: 'Peter O.', referrals: 98, earnings: 42000 },
+  { level: 1, rate: COMMISSION_RATES[1] * 100, color: 'from-emerald-500 to-teal-600', label: 'Direct referrals' },
+  { level: 2, rate: COMMISSION_RATES[2] * 100, color: 'from-sky-400 to-blue-500', label: "Referral's referrals" },
+  { level: 3, rate: COMMISSION_RATES[3] * 100, color: 'from-violet-400 to-purple-500', label: '3rd level network' },
 ];
 
 export default function Referrals() {
+  const { user } = useAuth();
+  const [referrals, setReferrals] = useState([]);
+  const [earnings, setEarnings] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const referralLink = getReferralLink(user?.id);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    setReferrals(getMyReferrals(user.id));
+    setEarnings(getL1Earnings(user.id));
+  }, [user?.id]);
+
   const copyLink = () => {
-    navigator.clipboard?.writeText('https://treasurybonds.app/r/USER123');
+    navigator.clipboard?.writeText(referralLink);
+    playSound('click');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareOn = (platform) => {
+    const msg = `Join Bondify and earn by distributing Australian government bonds! Use my link: ${referralLink}`;
+    const urls = {
+      WhatsApp: `https://wa.me/?text=${encodeURIComponent(msg)}`,
+      Facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`,
+      Telegram: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(msg)}`,
+    };
+    if (urls[platform]) window.open(urls[platform], '_blank');
     playSound('click');
   };
 
@@ -35,28 +55,37 @@ export default function Referrals() {
 
       {/* Referral link */}
       <GlassCard glow glowColor="emerald">
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="w-24 h-24 rounded-2xl bg-white p-2 flex items-center justify-center shrink-0">
-            <QrCode size={80} className="text-navy" />
-          </div>
-          <div className="flex-1 w-full">
-            <p className="text-sm text-muted-foreground mb-1">Your referral link</p>
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50">
-              <code className="text-sm flex-1 truncate">https://treasurybonds.app/r/USER123</code>
-              <button onClick={copyLink} className="p-2 rounded-lg glass hover:scale-105 transition-transform">
-                <Copy size={16} />
-              </button>
-            </div>
-            <div className="flex gap-2 mt-3">
-              {['WhatsApp', 'Facebook', 'Telegram'].map((s) => (
-                <MagneticButton key={s} onClick={() => playSound('click')} strength={0.15} className="px-3 py-1.5 rounded-lg glass text-xs font-medium flex items-center gap-1.5">
-                  <Share2 size={12} /> {s}
-                </MagneticButton>
-              ))}
-            </div>
-          </div>
+        <p className="text-sm text-muted-foreground mb-3">Your unique referral link</p>
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 mb-3">
+          <code className="text-sm flex-1 truncate text-emerald-400">{referralLink || 'Loading…'}</code>
+          <button
+            onClick={copyLink}
+            className="p-2 rounded-lg glass hover:scale-105 transition-transform flex items-center gap-1.5 text-xs font-medium"
+          >
+            {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {['WhatsApp', 'Facebook', 'Telegram'].map((s) => (
+            <MagneticButton key={s} onClick={() => shareOn(s)} strength={0.15} className="px-3 py-1.5 rounded-lg glass text-xs font-medium flex items-center gap-1.5">
+              <Share2 size={12} /> {s}
+            </MagneticButton>
+          ))}
         </div>
       </GlassCard>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4">
+        <GlassCard hover className="text-center">
+          <div className="text-3xl font-bold text-emerald-500">{referrals.length}</div>
+          <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1"><Users size={11} /> Direct referrals</p>
+        </GlassCard>
+        <GlassCard hover className="text-center">
+          <div className="text-3xl font-bold text-sky-400">{formatUGX(Math.round(earnings))}</div>
+          <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1"><Trophy size={11} /> L1 commissions</p>
+        </GlassCard>
+      </div>
 
       {/* Commission levels */}
       <div className="grid sm:grid-cols-3 gap-4">
@@ -68,35 +97,44 @@ export default function Referrals() {
               </div>
               <p className="text-3xl font-bold text-gradient-emerald">{l.rate}%</p>
               <p className="text-xs text-muted-foreground mt-1">Commission rate</p>
-              <div className="mt-3 pt-3 border-t border-border text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Referrals</span><span className="font-medium">{l.count}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Earnings</span><span className="font-medium text-emerald-500"><CountUp value={l.earnings} prefix="UGX " /></span></div>
-              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">{l.label}</p>
             </GlassCard>
           </motion.div>
         ))}
       </div>
 
-      {/* Leaderboard */}
+      {/* My referrals list */}
       <GlassCard hover={false}>
         <div className="flex items-center gap-2 mb-4">
-          <Trophy className="text-amber-500" size={20} />
-          <h3 className="font-semibold">Top Referrers — This Month</h3>
+          <Users className="text-emerald-500" size={20} />
+          <h3 className="font-semibold">Your Referrals</h3>
         </div>
-        <div className="space-y-2">
-          {LEADERBOARD.map((u) => (
-            <div key={u.rank} className={`flex items-center gap-3 p-3 rounded-xl ${u.isYou ? 'bg-emerald-500/10 ring-1 ring-emerald-500/30' : 'bg-muted/30'}`}>
-              <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${u.rank <= 3 ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white' : 'bg-muted text-muted-foreground'}`}>
-                {u.rank}
-              </span>
-              <div className="flex-1">
-                <p className="font-medium text-sm">{u.name}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Users size={11} /> {u.referrals} referrals</p>
+        {referrals.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground text-sm">
+            <Users size={32} className="mx-auto opacity-20 mb-2" />
+            <p>No referrals yet.</p>
+            <p className="text-xs mt-1">Share your link to start earning commissions.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {referrals.map((r, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-sm">
+                    {r.referredEmail?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{r.referredEmail}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Joined {new Date(r.joinedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs text-emerald-500 font-semibold">L1</span>
               </div>
-              <span className="font-semibold text-emerald-500 text-sm">{formatUGX(u.earnings)}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </GlassCard>
     </div>
   );

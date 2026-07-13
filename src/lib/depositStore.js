@@ -3,6 +3,7 @@ const BONUS_KEY = 'bondify_bonus_balance';
 const BONUS_GIVEN_KEY = 'bondify_bonus_given';
 const BONUS_WITHDRAWABLE_KEY = 'bondify_bonus_withdrawable';
 const WITHDRAWALS_KEY = 'bondify_withdrawals';
+const GIFT_KEY = 'bondify_gift_credits';
 
 export const FIRST_DEPOSIT_BONUS = 10000;
 
@@ -49,6 +50,8 @@ export function getWalletBalance() {
     .filter((d) => d.status === 'approved')
     .reduce((s, d) => s + parseInt(d.amount, 10), 0);
 
+  const gifts = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10);
+
   let withdrawn = 0;
   try {
     const wds = JSON.parse(localStorage.getItem(WITHDRAWALS_KEY) || '[]');
@@ -57,7 +60,12 @@ export function getWalletBalance() {
       .reduce((s, w) => s + parseInt(w.amount, 10), 0);
   } catch { /* */ }
 
-  return Math.max(0, deposited - withdrawn);
+  return Math.max(0, deposited + gifts - withdrawn);
+}
+
+export function addGiftCredit(amount) {
+  const current = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10);
+  localStorage.setItem(GIFT_KEY, String(current + parseInt(amount, 10)));
 }
 
 export function getBonusBalance() {

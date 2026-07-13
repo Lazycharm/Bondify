@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/api/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { UserPlus, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { sendTelegram } from "@/lib/telegramNotify";
+import { storeRefCode, getStoredRefCode, addReferral, clearRefCode } from "@/lib/referralStore";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,12 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref) storeRefCode(ref);
+  }, [location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,13 +33,19 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { emailRedirectTo: window.location.origin + '/dashboard' },
       });
       if (error) throw error;
-      sendTelegram(`🆕 <b>New User Registered</b>\n\nEmail: ${email}\nTime: ${new Date().toLocaleString()}`);
+      // Store referral if someone referred this user
+      const refCode = getStoredRefCode();
+      if (refCode) {
+        addReferral({ referrerId: refCode, referredEmail: email, referredId: data?.user?.id });
+        clearRefCode();
+      }
+      sendTelegram(`🆕 <b>New User Registered</b>\n\nEmail: ${email}\nReferred by: ${refCode || 'direct'}\nTime: ${new Date().toLocaleString()}`);
       setEmailSent(true);
     } catch (err) {
       setError(err.message || "Registration failed");

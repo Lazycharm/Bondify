@@ -68,10 +68,12 @@ export default function Layout() {
   }, []);
 
   function openNotifications() {
-    setNotifOpen((o) => !o);
-    if (!notifOpen && user?.id) {
+    const opening = !notifOpen;
+    setNotifOpen(opening);
+    if (opening && user?.id) {
       markAllRead(user.id);
       setUnread(0);
+      setNotifications(getUserNotifications(user.id).slice(0, 20));
     }
     playSound('click');
   }
@@ -272,7 +274,7 @@ export default function Layout() {
         </div>
 
         {/* Main content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 pb-24 lg:pb-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 pb-32 lg:pb-10">
           <Outlet />
         </main>
       </div>
