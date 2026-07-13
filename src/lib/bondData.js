@@ -3,9 +3,9 @@
 
 export const DEMO_BONDS = {
   1: [
-    { id: 'v1b1', name: '91-Day Uganda T-Bill', type: 'Treasury Bill', face_value: 500000, trust_fee: 2000, profit_high: 7000, profit_mid: 5000, profit_low: 2500 },
+    { id: 'v1b1', name: '91-Day Australian T-Bill', type: 'Treasury Bill', face_value: 500000, trust_fee: 2000, profit_high: 7000, profit_mid: 5000, profit_low: 2500 },
     { id: 'v1b2', name: '182-Day T-Bill', type: 'Treasury Bill', face_value: 750000, trust_fee: 2500, profit_high: 8000, profit_mid: 5500, profit_low: 2800 },
-    { id: 'v1b3', name: 'Uganda Savings Bond A1', type: 'Savings Bond', face_value: 400000, trust_fee: 1800, profit_high: 5800, profit_mid: 4000, profit_low: 2000 },
+    { id: 'v1b3', name: 'Australian Savings Bond A1', type: 'Savings Bond', face_value: 400000, trust_fee: 1800, profit_high: 5800, profit_mid: 4000, profit_low: 2000 },
     { id: 'v1b4', name: 'SME Support Bond', type: 'Savings Bond', face_value: 480000, trust_fee: 2200, profit_high: 6600, profit_mid: 4600, profit_low: 2200 },
     { id: 'v1b5', name: 'Green Energy Bond', type: 'Infrastructure Bond', face_value: 600000, trust_fee: 3000, profit_high: 9000, profit_mid: 6400, profit_low: 3000 },
     { id: 'v1b6', name: 'Agri-Finance Bond', type: 'Savings Bond', face_value: 450000, trust_fee: 2100, profit_high: 6200, profit_mid: 4400, profit_low: 2100 },

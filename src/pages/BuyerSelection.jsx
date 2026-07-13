@@ -69,7 +69,7 @@ export default function BuyerSelection() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-10">
+    <div className="max-w-lg mx-auto space-y-6 pb-32 lg:pb-10">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">

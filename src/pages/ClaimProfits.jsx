@@ -110,7 +110,7 @@ export default function ClaimProfits() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-10 relative">
+    <div className="max-w-lg mx-auto space-y-6 pb-32 lg:pb-10 relative">
       {/* Confetti */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">

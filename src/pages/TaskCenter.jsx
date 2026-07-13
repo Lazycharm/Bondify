@@ -5,10 +5,14 @@ import { CheckSquare, TrendingUp, Clock, ChevronRight, Zap, Lock, Star, ArrowUp 
 import { useAuth } from '@/lib/AuthContext';
 import { DEMO_BONDS, UPGRADE_BONDS, generateBuyerSession } from '@/lib/bondData';
 import { VIP_LEVELS, formatUGX, formatUGXShort, getBondsPerDay } from '@/lib/vipData';
+import { getWalletBalance } from '@/lib/depositStore';
 
-const DEMO_VIP_LEVEL = 1;
-const DEMO_WALLET_BALANCE = 185000;
 const MIN_BALANCE = 5000;
+
+function getCurrentVip(balance) {
+  const sorted = [...VIP_LEVELS].sort((a, b) => b.min_investment - a.min_investment);
+  return sorted.find((v) => balance >= v.min_investment) ?? VIP_LEVELS[0];
+}
 
 function getTaskState() {
   try {
@@ -36,9 +40,15 @@ export default function TaskCenter() {
   const [taskState, setTaskState] = useState(getTaskState);
   const [selectedBond, setSelectedBond] = useState(null);
   const [countdown, setCountdown] = useState('');
-  const [walletBalance] = useState(DEMO_WALLET_BALANCE);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [vipLevel, setVipLevel] = useState(1);
 
-  const vipLevel = DEMO_VIP_LEVEL;
+  useEffect(() => {
+    const bal = getWalletBalance();
+    setWalletBalance(bal);
+    setVipLevel(getCurrentVip(bal).level);
+  }, []);
+
   const vipData = VIP_LEVELS.find(v => v.level === vipLevel);
   const bondsPerDay = getBondsPerDay(vipLevel);
   const bonds = DEMO_BONDS[vipLevel] ?? [];
@@ -89,7 +99,7 @@ export default function TaskCenter() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+    <div className="max-w-4xl mx-auto space-y-6 pb-32 lg:pb-10">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Task Center</h1>
@@ -244,7 +254,7 @@ export default function TaskCenter() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-navy/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 pb-24 sm:pb-4 bg-navy/60 backdrop-blur-sm"
             onClick={() => setSelectedBond(null)}
           >
             <motion.div
