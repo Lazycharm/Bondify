@@ -26,7 +26,7 @@ const STATS = [
 ];
 
 const FEATURES = [
-  { icon: Shield, title: 'Bank-Grade Security', desc: 'OTP, encryption, and audit trails protect every transaction.', image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80' },
+  { icon: Shield, title: 'Bank-Grade Security', desc: 'End-to-end encryption and audit trails protect every transaction.', image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80' },
   { icon: HandCoins, title: 'Sell to Highest Buyer', desc: '3 buyers compete for each bond — pick the highest price and earn instant profit.', image: 'https://images.unsplash.com/photo-1556745757-8d76bdb6984b?w=600&q=80' },
   { icon: Crown, title: '10 VIP Levels', desc: 'Progress from Starter to Crown with bigger bonds and higher profits.', image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80' },
   { icon: Gift, title: 'Daily Rewards', desc: 'Treasure chests, check-in streaks, and gift codes every day.', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=80' },
@@ -84,7 +84,7 @@ export default function Landing() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-strong text-sm mb-6"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-300">Live Bond Sales Platform · Uganda</span>
+            <span className="text-emerald-300">Authorised Australian Bond Reseller Network</span>
           </motion.div>
 
           <motion.h1
@@ -93,9 +93,8 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl sm:text-7xl font-bold tracking-tight text-white"
           >
-            Trade{' '}
-            <span className="text-gradient-emerald">Treasury Bonds</span>
-            {' '}for Profit
+            Earn by Selling{' '}
+            <span className="text-gradient-emerald">Australian Bonds</span>
           </motion.h1>
 
           <motion.p
@@ -104,7 +103,8 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="mt-4 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto"
           >
-            Acquire government bonds, sell to the highest buyer, and earn daily profits — all from your phone.
+            We sub-contract the distribution of Australian government bonds to our global network.
+            You sell them to the highest buyer — we handle compliance, you keep the profit.
           </motion.p>
 
           <motion.div
@@ -342,10 +342,10 @@ export default function Landing() {
             <ParticleBackground density={30} color="255, 255, 255" />
             <div className="relative z-10">
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Start earning from bonds today
+                Join our global bond network today
               </h2>
               <p className="text-white/80 mb-8 max-w-md mx-auto">
-                Get a UGX 10,000 registration bonus. Complete your first bond task within minutes.
+                Get a UGX 10,000 welcome bonus. Start reselling Australian government bonds within minutes.
               </p>
               <MagneticButton
                 onClick={() => {}}

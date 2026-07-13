@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { sendTelegram } from "@/lib/telegramNotify";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -31,6 +32,7 @@ export default function Register() {
         options: { emailRedirectTo: window.location.origin + '/dashboard' },
       });
       if (error) throw error;
+      sendTelegram(`🆕 <b>New User Registered</b>\n\nEmail: ${email}\nTime: ${new Date().toLocaleString()}`);
       setEmailSent(true);
     } catch (err) {
       setError(err.message || "Registration failed");

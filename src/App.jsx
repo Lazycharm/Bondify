@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminRoute from '@/components/AdminRoute';
 
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
@@ -23,6 +24,9 @@ import BuyerSelection from '@/pages/BuyerSelection';
 import SalesContract from '@/pages/SalesContract';
 import ClaimProfits from '@/pages/ClaimProfits';
 import WalletPage from '@/pages/WalletPage';
+import DepositPage from '@/pages/DepositPage';
+import DepositGateway from '@/pages/DepositGateway';
+import DepositInstructions from '@/pages/DepositInstructions';
 import Portfolio from '@/pages/Portfolio';
 import Referrals from '@/pages/Referrals';
 import Achievements from '@/pages/Achievements';
@@ -32,6 +36,12 @@ import TransactionDetails from '@/pages/TransactionDetails';
 import Withdrawals from '@/pages/Withdrawals';
 import Profile from '@/pages/Profile';
 import Calculator from '@/pages/Calculator';
+
+import AdminLayout from '@/pages/admin/AdminLayout';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminDeposits from '@/pages/admin/AdminDeposits';
+import AdminWithdrawals from '@/pages/admin/AdminWithdrawals';
+import AdminSettings from '@/pages/admin/AdminSettings';
 
 function App() {
   return (
@@ -48,11 +58,14 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* Protected */}
+              {/* Protected — user app */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/dashboard/wallet" element={<WalletPage />} />
+                  <Route path="/dashboard/deposit" element={<DepositPage />} />
+                  <Route path="/dashboard/deposit/gateway" element={<DepositGateway />} />
+                  <Route path="/dashboard/deposit/instructions" element={<DepositInstructions />} />
                   <Route path="/dashboard/portfolio" element={<Portfolio />} />
                   <Route path="/dashboard/tasks" element={<TaskCenter />} />
                   <Route path="/dashboard/tasks/sell" element={<BuyerSelection />} />
@@ -68,6 +81,16 @@ function App() {
                   <Route path="/dashboard/profile" element={<Profile />} />
                   <Route path="/dashboard/calculator" element={<Calculator />} />
                   <Route path="/transaction-details/:id" element={<TransactionDetails />} />
+                </Route>
+              </Route>
+
+              {/* Admin panel */}
+              <Route element={<AdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/deposits" element={<AdminDeposits />} />
+                  <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
                 </Route>
               </Route>
 
