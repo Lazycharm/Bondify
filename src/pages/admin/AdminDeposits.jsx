@@ -5,6 +5,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import { getDeposits, updateDeposit } from '@/lib/depositStore';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
+import { addNotification } from '@/lib/notificationStore';
 import { playSound } from '@/lib/sound';
 
 const STATUS = {
@@ -35,6 +36,14 @@ export default function AdminDeposits() {
     await sendTelegram(
       `${status === 'approved' ? '✅' : '❌'} Deposit <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nNetwork: ${updated.network?.toUpperCase()}`
     );
+    if (updated.userId) {
+      addNotification(updated.userId, {
+        type: status === 'approved' ? 'success' : 'error',
+        message: status === 'approved'
+          ? `✅ Your deposit of ${formatUGX(updated.amount)} has been approved and credited to your wallet.`
+          : `❌ Your deposit of ${formatUGX(updated.amount)} was rejected. Contact support if this is an error.`,
+      });
+    }
     setDeposits(getDeposits());
   }, []);
 

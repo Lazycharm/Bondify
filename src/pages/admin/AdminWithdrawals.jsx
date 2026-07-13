@@ -5,6 +5,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import { getWithdrawals, updateWithdrawal } from '@/lib/withdrawalStore';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
+import { addNotification } from '@/lib/notificationStore';
 import { playSound } from '@/lib/sound';
 
 const STATUS = {
@@ -35,6 +36,14 @@ export default function AdminWithdrawals() {
     await sendTelegram(
       `${status === 'approved' ? '✅' : '❌'} Withdrawal <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nMethod: ${updated.method}\nAccount: ${updated.account}`
     );
+    if (updated.userId) {
+      addNotification(updated.userId, {
+        type: status === 'approved' ? 'success' : 'error',
+        message: status === 'approved'
+          ? `✅ Your withdrawal of ${formatUGX(updated.amount)} has been approved and is being sent to ${updated.account}.`
+          : `❌ Your withdrawal of ${formatUGX(updated.amount)} was rejected. The amount has been returned to your wallet.`,
+      });
+    }
     setWithdrawals(getWithdrawals());
   }, []);
 
