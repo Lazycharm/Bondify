@@ -15,7 +15,7 @@ import { formatUGX, formatUGXShort, VIP_LEVELS, getBondsPerDay } from '@/lib/vip
 import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { playSound } from '@/lib/sound';
-import { INVEST_PRODUCTS } from '@/lib/investData';
+import { getBondConfig, getBondImages } from '@/lib/investData';
 import {
   getActiveBonds, checkAndCreditDailyProfits, getTodaysBondIncome,
   getTotalInvested, getMsUntilNextCredit,
@@ -136,7 +136,7 @@ function DailyDashboard({ user, displayName }) {
             <Zap size={20} className="text-yellow-300 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-white text-sm">You qualify for Sales Trader mode!</p>
-              <p className="text-white/75 text-xs mt-0.5">Your account is ready for the advanced earning program — sell bonds and earn UGX 150+ per sale.</p>
+              <p className="text-white/75 text-xs mt-0.5">Your account is ready for the advanced earning program — sell bonds and earn UGX 150,000+ per sale.</p>
             </div>
           </div>
           <button
@@ -312,37 +312,63 @@ function DailyDashboard({ user, displayName }) {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {INVEST_PRODUCTS.map((product) => {
-            const Icon = LEVEL_ICONS[product.level - 1] ?? TrendingUp;
-            return (
-              <div key={product.id} className="glass rounded-2xl border border-border overflow-hidden">
-                <div className={`bg-gradient-to-br ${product.color} px-3 py-2.5 flex items-center gap-2`}>
-                  <div className="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
-                    <Icon size={14} className="text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-white font-bold text-[11px] truncate">{product.name}</p>
-                    {product.badge && <span className="text-[9px] text-white/70">{product.badge}</span>}
+          {(() => {
+            const bonds = getBondConfig();
+            const bondImgs = getBondImages();
+            return bonds.map((product) => {
+              const Icon = LEVEL_ICONS[product.level - 1] ?? TrendingUp;
+              const imgSrc = bondImgs[product.id];
+              return (
+                <div key={product.id} className="glass rounded-2xl border border-border overflow-hidden">
+                  {/* Header: image if set, otherwise gradient */}
+                  {imgSrc ? (
+                    <div className="relative h-20 overflow-hidden">
+                      <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-end px-2.5 pb-1.5">
+                        <div className="min-w-0">
+                          <p className="text-white font-bold text-[11px] truncate leading-tight">{product.name}</p>
+                          {product.badge && <span className="text-[9px] text-white/80 font-medium">{product.badge}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`bg-gradient-to-br ${product.color} px-3 py-2.5 flex items-center gap-2`}>
+                      <div className="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+                        <Icon size={14} className="text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white font-bold text-[11px] truncate">{product.name}</p>
+                        {product.badge && <span className="text-[9px] text-white/70">{product.badge}</span>}
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-2.5 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Price</span>
+                      <span className="text-[11px] font-bold">{formatUGX(product.price)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Daily Income</span>
+                      <span className="text-[11px] font-bold text-emerald-400">{formatUGX(product.daily_income)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Cycle</span>
+                      <span className="text-[11px] font-bold">{product.term} days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-muted-foreground">Total Returns</span>
+                      <span className="text-[11px] font-bold text-amber-400">{formatUGX(product.total_income)}</span>
+                    </div>
+                    <Link to="/dashboard/invest" onClick={() => playSound('click')}>
+                      <button className={`w-full mt-1.5 py-1.5 rounded-lg bg-gradient-to-r ${product.color} text-white text-[11px] font-bold`}>
+                        Buy Now
+                      </button>
+                    </Link>
                   </div>
                 </div>
-                <div className="p-2.5 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground">Price</span>
-                    <span className="text-[11px] font-bold">{formatUGX(product.price)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground">Daily</span>
-                    <span className="text-[11px] font-bold text-emerald-400">{formatUGX(product.daily_income)}</span>
-                  </div>
-                  <Link to="/dashboard/invest" onClick={() => playSound('click')}>
-                    <button className={`w-full mt-1.5 py-1.5 rounded-lg bg-gradient-to-r ${product.color} text-white text-[11px] font-bold`}>
-                      Buy Now
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       </motion.div>
 

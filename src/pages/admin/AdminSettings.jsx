@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Send, CheckCircle2, Smartphone, Bot, Shield } from 'lucide-react';
+import { Save, Send, CheckCircle2, Smartphone, Bot, Shield, Camera, BarChart2 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { getPaymentSettings, savePaymentSettings } from '@/lib/paymentSettings';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { playSound } from '@/lib/sound';
+import { getBondConfig, saveBondConfig, getBondImages, saveBondImages } from '@/lib/investData';
 
 function Field({ label, id, value, onChange, placeholder, type = 'text', hint }) {
   return (
@@ -28,6 +29,35 @@ export default function AdminSettings() {
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState('');
+
+  // Bond config state
+  const [bonds, setBonds] = useState(() => getBondConfig());
+  const [bondImages, setBondImages] = useState(() => getBondImages());
+  const [bondsSaved, setBondsSaved] = useState(false);
+  const fileRefs = useRef({});
+
+  function updateBond(id, key, value) {
+    setBonds((prev) => prev.map((b) => b.id === id ? { ...b, [key]: value } : b));
+  }
+
+  function handleBondImageUpload(id, file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const updated = { ...bondImages, [id]: e.target.result };
+      setBondImages(updated);
+      saveBondImages(updated);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveBonds() {
+    saveBondConfig(bonds);
+    saveBondImages(bondImages);
+    playSound('success');
+    setBondsSaved(true);
+    setTimeout(() => setBondsSaved(false), 2500);
+  }
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -230,6 +260,108 @@ export default function AdminSettings() {
       >
         {saved ? <><CheckCircle2 size={18} /> Saved!</> : <><Save size={18} /> Save Settings</>}
       </button>
+
+      {/* Bond Packages Config */}
+      <div>
+        <div className="flex items-center gap-3 mb-4 mt-4">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center">
+            <BarChart2 size={18} className="text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">Bond Packages</h2>
+            <p className="text-xs text-muted-foreground">Configure bond names, prices, returns, cycles and upload images.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {bonds.map((bond) => (
+            <GlassCard key={bond.id} hover={false} className="overflow-hidden !p-0">
+              {/* Image area — click to upload */}
+              <div
+                className="relative cursor-pointer group"
+                onClick={() => fileRefs.current[bond.id]?.click()}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={(el) => { fileRefs.current[bond.id] = el; }}
+                  onChange={(e) => handleBondImageUpload(bond.id, e.target.files[0])}
+                />
+                {bondImages[bond.id] ? (
+                  <img src={bondImages[bond.id]} alt={bond.name} className="w-full h-24 object-cover" />
+                ) : (
+                  <div className={`w-full h-24 bg-gradient-to-br ${bond.color} flex flex-col items-center justify-center gap-1`}>
+                    <Camera size={18} className="text-white/60" />
+                    <span className="text-white/60 text-[10px]">Click to upload image</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                    <Camera size={13} className="text-white" />
+                    <span className="text-white text-[11px] font-medium">{bondImages[bond.id] ? 'Change image' : 'Upload image'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fields */}
+              <div className="p-3 space-y-2">
+                <input
+                  value={bond.name}
+                  onChange={(e) => updateBond(bond.id, 'name', e.target.value)}
+                  placeholder="Bond name"
+                  className="w-full bg-muted/40 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Price (UGX)</label>
+                    <input
+                      type="number"
+                      value={bond.price}
+                      onChange={(e) => updateBond(bond.id, 'price', Number(e.target.value))}
+                      className="w-full bg-muted/40 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Daily Income (UGX)</label>
+                    <input
+                      type="number"
+                      value={bond.daily_income}
+                      onChange={(e) => updateBond(bond.id, 'daily_income', Number(e.target.value))}
+                      className="w-full bg-muted/40 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Cycle (days)</label>
+                    <input
+                      type="number"
+                      value={bond.term}
+                      onChange={(e) => updateBond(bond.id, 'term', Number(e.target.value))}
+                      className="w-full bg-muted/40 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Total Returns (UGX)</label>
+                    <input
+                      type="number"
+                      value={bond.total_income}
+                      onChange={(e) => updateBond(bond.id, 'total_income', Number(e.target.value))}
+                      className="w-full bg-muted/40 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    />
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+
+        <button
+          onClick={saveBonds}
+          className="mt-4 flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all"
+        >
+          {bondsSaved ? <><CheckCircle2 size={18} /> Bond Config Saved!</> : <><Save size={18} /> Save Bond Packages</>}
+        </button>
+      </div>
     </div>
   );
 }

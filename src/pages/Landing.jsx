@@ -8,7 +8,7 @@ import {
 import Navbar from '@/components/Navbar';
 import ParticleBackground from '@/components/ParticleBackground';
 import GlassCard from '@/components/ui/GlassCard';
-import { INVEST_PRODUCTS } from '@/lib/investData';
+import { getBondConfig } from '@/lib/investData';
 
 const STEPS = [
   { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add funds to your Bondify wallet through our secure payment gateway. Low minimum, takes just 2 minutes.' },
@@ -65,7 +65,7 @@ export default function Landing() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-strong text-sm mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-300 font-medium">Live — People earning right now</span>
+            <span className="text-emerald-300 font-medium">Live People earning right now</span>
           </motion.div>
 
           {/* Big heading — simple words */}
@@ -75,7 +75,7 @@ export default function Landing() {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight"
           >
-            Put Money In.{' '}
+            Put Money In{' '}
             <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
               Earn Every Day.
             </span>
@@ -88,7 +88,7 @@ export default function Landing() {
             className="mt-5 text-lg sm:text-xl text-white/75 max-w-xl mx-auto leading-relaxed"
           >
             Bondify lets you earn daily income from government bonds.
-            Start with a small amount and watch your money grow — no experience needed.
+            Start with a small amount and watch your money grow no experience needed.
           </motion.p>
 
           {/* Bonus highlight */}
@@ -99,7 +99,7 @@ export default function Landing() {
             className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-500/20 border border-amber-400/30"
           >
             <Gift size={18} className="text-amber-400" />
-            <span className="text-amber-300 font-semibold text-sm">Join today — get a free welcome bonus</span>
+            <span className="text-amber-300 font-semibold text-sm">Join today, get 10,000 UGX free welcome bonus</span>
           </motion.div>
 
           {/* CTAs */}
@@ -162,7 +162,7 @@ export default function Landing() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-black">3 Simple Steps to Earn</h2>
-            <p className="text-muted-foreground mt-2">Even if this is your first time investing — you'll understand in 60 seconds.</p>
+            <p className="text-muted-foreground mt-2">Even if this is your first time investing you'll understand in 60 seconds.</p>
           </motion.div>
 
           <div className="space-y-5">
@@ -199,7 +199,7 @@ export default function Landing() {
           >
             <Link to="/register">
               <button className="px-10 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-base shadow-xl shadow-emerald-500/30 flex items-center gap-2 mx-auto">
-                Join Now — It's Free <ArrowRight size={18} />
+                Join Now It's Free <ArrowRight size={18} />
               </button>
             </Link>
           </motion.div>
@@ -220,7 +220,7 @@ export default function Landing() {
           </motion.div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {INVEST_PRODUCTS.slice(0, 6).map((product, i) => (
+            {getBondConfig().slice(0, 6).map((product, i) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 16 }}
@@ -232,14 +232,14 @@ export default function Landing() {
                   <div className={`bg-gradient-to-br ${product.color} px-3 py-3`}>
                     <p className="text-white font-bold text-xs">{product.name}</p>
                   </div>
-                  <div className="p-3 space-y-2">
+                  <div className="p-3 space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-[10px] text-muted-foreground">Daily return</span>
                       <span className="text-[11px] font-bold text-emerald-400">{((product.daily_income / product.price) * 100).toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground">Duration</span>
-                      <span className="text-[11px] font-bold">{product.duration}d</span>
+                      <span className="text-[10px] text-muted-foreground">Cycle</span>
+                      <span className="text-[11px] font-bold">{product.term}d</span>
                     </div>
                   </div>
                 </div>
@@ -299,7 +299,7 @@ export default function Landing() {
             <div className="text-5xl mb-4">💰</div>
             <h2 className="text-2xl font-black mb-2">Ready to Start Earning?</h2>
             <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-              Sign up free. Add funds with a low minimum. Your money starts working for you tomorrow morning.
+              Sign up free. Add funds with a low minimum. Your money starts working for you and profits in your account every morning.
             </p>
             <div className="space-y-2">
               {['Free to join — no monthly fees', 'Free welcome bonus on signup', 'Withdraw to your phone anytime'].map((item) => (

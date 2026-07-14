@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Mail, Phone, Shield, Bell, Lock, Smartphone, Eye, EyeOff,
-  Fingerprint, KeyRound, ChevronRight, Check,
+  Fingerprint, KeyRound, ChevronRight, Check, LogOut,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { playSound } from '@/lib/sound';
+import { useAuth } from '@/lib/AuthContext';
 
 const TABS = [
   { id: 'personal', label: 'Personal', icon: User },
@@ -15,6 +16,7 @@ const TABS = [
 ];
 
 export default function Profile() {
+  const { logout } = useAuth();
   const [tab, setTab] = useState('personal');
   const [saved, setSaved] = useState(false);
 
@@ -182,6 +184,16 @@ export default function Profile() {
           </GlassCard>
         </motion.div>
       )}
+
+      {/* Logout — always visible at bottom */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <button
+          onClick={() => { playSound('click'); logout(); }}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl glass border border-rose-500/20 text-rose-400 font-semibold text-sm hover:bg-rose-500/10 transition-colors"
+        >
+          <LogOut size={16} /> Sign Out
+        </button>
+      </motion.div>
 
       {/* Notifications Tab */}
       {tab === 'notifications' && (

@@ -50,14 +50,14 @@ function TasksGateModal({ onClose }) {
           {/* Earnings teaser */}
           <div className="rounded-2xl bg-violet-500/10 border border-violet-500/20 p-4 text-center">
             <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest mb-1">Sales Traders earn</p>
-            <p className="text-3xl font-black text-violet-400">+UGX 150+</p>
+            <p className="text-3xl font-black text-violet-400">+UGX 150,000+</p>
             <p className="text-[11px] text-muted-foreground mt-1">per bond sold — multiple bonds every single day</p>
           </div>
 
           {/* Benefits */}
           <div className="space-y-3">
             {[
-              { icon: Zap, text: 'Sell government bonds to real buyers — earn UGX 150 to UGX 33,000 profit per sale' },
+              { icon: Zap, text: 'Sell government bonds to real buyers — earn UGX 150,000 to UGX 33,000,000 profit per sale' },
               { icon: TrendingUp, text: 'Higher VIP level = more bonds to sell daily = much bigger earnings' },
               { icon: CalendarClock, text: 'Monthly contracts — bigger commitment, much bigger rewards. Withdraw after 30 days.' },
             ].map(({ icon: Icon, text }) => (

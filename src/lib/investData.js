@@ -91,3 +91,27 @@ export const INVEST_PRODUCTS = [
     badge: 'Max Returns',
   },
 ];
+
+export function getBondConfig() {
+  try {
+    const s = localStorage.getItem('bondify_bond_config');
+    if (s) return JSON.parse(s);
+  } catch {}
+  return INVEST_PRODUCTS;
+}
+
+export function saveBondConfig(bonds) {
+  localStorage.setItem('bondify_bond_config', JSON.stringify(bonds));
+}
+
+export function getBondImages() {
+  try {
+    const s = localStorage.getItem('bondify_bond_images');
+    if (s) return JSON.parse(s);
+  } catch {}
+  return {};
+}
+
+export function saveBondImages(images) {
+  localStorage.setItem('bondify_bond_images', JSON.stringify(images));
+}
