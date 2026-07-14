@@ -10,8 +10,8 @@ import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { CelebrationOverlay } from '@/components/ui/Celebration';
 import { useAuth } from '@/lib/AuthContext';
-import { formatUGX, VIP_LEVELS, getBondsPerDay } from '@/lib/vipData';
-import { getWalletBalance, getUserDeposits } from '@/lib/depositStore';
+import { formatUGX, formatUGXShort, VIP_LEVELS, getBondsPerDay } from '@/lib/vipData';
+import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { playSound } from '@/lib/sound';
 
@@ -38,6 +38,11 @@ export default function Dashboard() {
     tasksCompleted: 0,
     tasksTotal: 3,
     vip: VIP_LEVELS[0],
+    nextVip: VIP_LEVELS[1],
+    progressToNext: 0,
+    amountNeeded: 0,
+    bonusBalance: 0,
+    bonusUnlocked: false,
     recentTx: [],
   });
 
@@ -73,10 +78,16 @@ export default function Dashboard() {
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, 8);
 
-    setStats({ balance, pendingWithdrawal, tasksCompleted, tasksTotal: bondsPerDay, vip, recentTx });
+    const currentVipIdx = VIP_LEVELS.findIndex(v => v.level === vip.level);
+    const nextVip = VIP_LEVELS[currentVipIdx + 1] ?? null;
+    const progressToNext = nextVip ? Math.min((balance / nextVip.min_investment) * 100, 100) : 100;
+    const amountNeeded = nextVip ? Math.max(0, nextVip.min_investment - balance) : 0;
+    const bonusBalance = getBonusBalance();
+    const bonusUnlocked = isBonusWithdrawable();
+    setStats({ balance, pendingWithdrawal, tasksCompleted, tasksTotal: bondsPerDay, vip, nextVip, progressToNext, amountNeeded, bonusBalance, bonusUnlocked, recentTx });
   }, [user?.id]);
 
-  const { balance, pendingWithdrawal, tasksCompleted, tasksTotal, vip, recentTx } = stats;
+  const { balance, pendingWithdrawal, tasksCompleted, tasksTotal, vip, nextVip, progressToNext, amountNeeded, bonusBalance, bonusUnlocked, recentTx } = stats;
 
   const statCards = [
     { label: 'Wallet Balance', value: balance, icon: Wallet, color: 'from-emerald-500 to-teal-600', numeric: true },
@@ -165,6 +176,89 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* #1 VIP Progress to Next Level */}
+      {nextVip && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}>
+          <GlassCard hover={false}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${vip.color} flex items-center justify-center shrink-0`}>
+                  <Crown size={13} className="text-white" />
+                </div>
+                <span className="text-sm font-semibold truncate">
+                  {vip.name} <span className="text-muted-foreground font-normal mx-1">→</span>
+                  <span className="text-amber-400">{nextVip.name}</span>
+                </span>
+              </div>
+              <Link to="/dashboard/deposit" onClick={() => playSound('click')} className="text-xs text-emerald-500 font-semibold hover:underline flex items-center gap-0.5 shrink-0 ml-2">
+                Deposit <ChevronRight size={11} />
+              </Link>
+            </div>
+            <div className="mb-3">
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className={`h-full bg-gradient-to-r ${nextVip.color} rounded-full`}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressToNext}%` }}
+                  transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                />
+              </div>
+              <div className="flex justify-between text-[11px] mt-1.5">
+                <span className="text-muted-foreground">{formatUGX(balance)}</span>
+                {amountNeeded > 0
+                  ? <span className="text-amber-400 font-medium">{formatUGX(amountNeeded)} to unlock</span>
+                  : <span className="text-emerald-400 font-medium">Ready to upgrade!</span>
+                }
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl bg-muted/40 p-2.5">
+                <p className="text-[10px] text-muted-foreground mb-0.5">You now earn</p>
+                <p className="text-xs font-bold text-muted-foreground">{formatUGXShort(vip.daily_earnings_min)}–{formatUGXShort(vip.daily_earnings_max)}<span className="font-normal text-[10px]">/day</span></p>
+              </div>
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5">
+                <p className="text-[10px] text-emerald-400 mb-0.5">{nextVip.name} earns</p>
+                <p className="text-xs font-bold text-emerald-400">{formatUGXShort(nextVip.daily_earnings_min)}–{formatUGXShort(nextVip.daily_earnings_max)}<span className="font-normal text-[10px]">/day</span></p>
+              </div>
+            </div>
+          </GlassCard>
+        </motion.div>
+      )}
+
+      {/* #6 Welcome Bonus — locked until Day 1 complete */}
+      {bonusBalance > 0 && !bonusUnlocked && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/20 flex items-center justify-center shrink-0 text-xl">🎁</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-amber-400">UGX {bonusBalance.toLocaleString()} Waiting For You</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Complete all Day 1 bond tasks to unlock your welcome bonus for withdrawal.</p>
+              </div>
+            </div>
+            <div className="space-y-1.5 mb-3">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Day 1 tasks</span>
+                <span className="font-semibold text-amber-400">{Math.min(tasksCompleted, tasksTotal)} / {tasksTotal} done</span>
+              </div>
+              <div className="h-2 bg-muted/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min((tasksCompleted / tasksTotal) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+            <Link
+              to="/dashboard/tasks"
+              onClick={() => playSound('click')}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors"
+            >
+              Complete Tasks → Unlock Bonus <ChevronRight size={13} />
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((card, i) => (
@@ -197,6 +291,66 @@ export default function Dashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* #3 Earnings Gap Insight */}
+      {nextVip && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp size={15} className="text-emerald-500 shrink-0" />
+              <p className="text-sm font-semibold">You're leaving money on the table</p>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+              At <span className="text-emerald-400 font-semibold">VIP {nextVip.level} {nextVip.name}</span> you'd earn{' '}
+              <span className="text-emerald-400 font-semibold">{formatUGX(nextVip.daily_earnings_max)}/day</span> — that's{' '}
+              <span className="text-amber-400 font-semibold">{formatUGX((nextVip.daily_earnings_max - vip.daily_earnings_max) * 7)} extra this week</span>.
+            </p>
+            <Link
+              to="/dashboard/deposit"
+              onClick={() => playSound('click')}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold hover:from-emerald-600 hover:to-teal-600 transition-all"
+            >
+              Deposit {amountNeeded > 0 ? formatUGX(amountNeeded) : 'now'} → Unlock {nextVip.name} <ArrowUpRight size={13} />
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
+      {/* #4 Network Earnings Leaderboard — real VIP tier data, user's tier highlighted */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44 }}>
+        <GlassCard hover={false}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Sparkles size={14} className="text-amber-400" />
+              Bondify Earnings by Tier
+            </h3>
+            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Today</span>
+          </div>
+          <div className="space-y-1.5">
+            {VIP_LEVELS.slice(0, 6).map((v) => {
+              const isUser = v.level === vip.level;
+              return (
+                <div
+                  key={v.level}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl ${isUser ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-muted/30'}`}
+                >
+                  <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${v.color} flex items-center justify-center shrink-0`}>
+                    <span className="text-[9px] font-bold text-white leading-none">{v.level}</span>
+                  </div>
+                  <span className={`text-xs font-medium flex-1 ${isUser ? 'text-foreground' : 'text-muted-foreground'}`}>{v.name}</span>
+                  <span className={`text-xs font-bold tabular-nums ${isUser ? 'text-emerald-400' : 'text-muted-foreground'}`}>
+                    {formatUGXShort(v.daily_earnings_min)}–{formatUGXShort(v.daily_earnings_max)}<span className="text-[10px] font-normal">/d</span>
+                  </span>
+                  {isUser && <span className="text-[9px] font-bold text-white bg-emerald-500 px-1.5 py-0.5 rounded-full shrink-0">YOU</span>}
+                </div>
+              );
+            })}
+          </div>
+          <Link to="/dashboard/vip" onClick={() => playSound('click')} className="mt-3 flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+            See all 10 levels <ChevronRight size={12} />
+          </Link>
+        </GlassCard>
+      </motion.div>
 
       {/* Recent transactions */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>

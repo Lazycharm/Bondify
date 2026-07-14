@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, CheckCircle2, Clock, Wallet, ChevronRight, PartyPopper, Gift } from 'lucide-react';
-import { formatUGX } from '@/lib/vipData';
-import { unlockBonusWithdrawal, isBonusWithdrawable, getBonusBalance, addGiftCredit } from '@/lib/depositStore';
+import { TrendingUp, CheckCircle2, Clock, Wallet, ChevronRight, PartyPopper, Gift, ArrowUpRight } from 'lucide-react';
+import { formatUGX, formatUGXShort, VIP_LEVELS } from '@/lib/vipData';
+import { unlockBonusWithdrawal, isBonusWithdrawable, getBonusBalance, addGiftCredit, getWalletBalance } from '@/lib/depositStore';
 
 const CONFETTI_COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'];
 
@@ -36,6 +36,11 @@ function saveTaskState(state) {
   localStorage.setItem('bondify_task_state', JSON.stringify(state));
 }
 
+function getCurrentVip(balance) {
+  const sorted = [...VIP_LEVELS].sort((a, b) => b.min_investment - a.min_investment);
+  return sorted.find((v) => balance >= v.min_investment) ?? VIP_LEVELS[0];
+}
+
 function formatCountdown(endTime) {
   const remaining = Math.max(0, endTime - Date.now());
   const h = Math.floor(remaining / 3600000);
@@ -47,6 +52,14 @@ function formatCountdown(endTime) {
 export default function ClaimProfits() {
   const navigate = useNavigate();
   const sale = getSaleData();
+
+  const walletBalance = getWalletBalance();
+  const currentVip = getCurrentVip(walletBalance);
+  const nextVip = (() => {
+    const idx = VIP_LEVELS.findIndex(v => v.level === currentVip.level);
+    return VIP_LEVELS[idx + 1] ?? null;
+  })();
+  const amountToUpgrade = nextVip ? Math.max(0, nextVip.min_investment - walletBalance) : 0;
 
   const [claimed, setClaimed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -227,6 +240,35 @@ export default function ClaimProfits() {
               </div>
             </div>
 
+            {/* #2 Earnings Comparison — your profit vs next VIP's potential */}
+            {nextVip && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4">
+                  <p className="text-xs font-semibold text-violet-400 mb-2.5 flex items-center gap-1.5">
+                    <TrendingUp size={12} /> Earnings Comparison
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="rounded-xl bg-muted/50 p-2.5 text-center">
+                      <p className="text-[10px] text-muted-foreground mb-1">Your profit</p>
+                      <p className="text-sm font-bold">+{formatUGX(netProfit)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">VIP {currentVip.level} {currentVip.name}</p>
+                    </div>
+                    <div className="rounded-xl bg-violet-500/10 border border-violet-500/20 p-2.5 text-center">
+                      <p className="text-[10px] text-violet-400 mb-1">VIP {nextVip.level} {nextVip.name}</p>
+                      <p className="text-sm font-bold text-violet-400">up to +{formatUGXShort(nextVip.profit_max)}</p>
+                      <p className="text-[10px] text-violet-300 mt-0.5">per bond</p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/dashboard/deposit"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-violet-500 text-white text-xs font-bold hover:bg-violet-600 transition-colors"
+                  >
+                    Unlock {nextVip.name} → Earn {formatUGXShort(nextVip.profit_max)}/bond <ArrowUpRight size={12} />
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+
             {/* Bonus unlock notification */}
             {allDone && isBonusWithdrawable() && getBonusBalance() > 0 && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
@@ -247,6 +289,27 @@ export default function ClaimProfits() {
                   <p className="font-mono text-xl font-bold text-amber-500 mt-0.5">{countdown || '24:00:00'}</p>
                 </div>
               </div>
+            )}
+
+            {/* #5 Cooldown upgrade prompt — don't let the dead zone go to waste */}
+            {allDone && nextVip && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+                  <p className="text-xs font-bold text-amber-400 mb-1.5">⚡ Don't just sit and wait</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    {amountToUpgrade > 0
+                      ? <><span className="text-amber-400 font-semibold">{formatUGX(amountToUpgrade)}</span> unlocks VIP {nextVip.level} {nextVip.name}. Deposit now — your upgraded tasks start the moment the timer hits zero.</>
+                      : <>You have enough to unlock VIP {nextVip.level} {nextVip.name} right now. Deposit and your new tasks will be ready when the timer hits zero.</>
+                    }
+                  </p>
+                  <Link
+                    to="/dashboard/deposit"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold hover:from-amber-600 hover:to-amber-700 transition-all"
+                  >
+                    Upgrade to {nextVip.name} While You Wait <ChevronRight size={12} />
+                  </Link>
+                </div>
+              </motion.div>
             )}
 
             {/* Continue button — only if more tasks remain */}

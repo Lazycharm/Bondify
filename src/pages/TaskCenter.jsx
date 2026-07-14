@@ -74,7 +74,7 @@ export default function TaskCenter() {
   }, [taskState.countdownEnd]);
 
   const dailyDone = taskState.completedToday >= bondsPerDay;
-  const showUpgrade = taskState.sessionDay >= 4 && upgradeBond;
+  const showUpgrade = !!upgradeBond;
   const progress = Math.min(taskState.completedToday / bondsPerDay, 1);
 
   function startTask(bond) {
@@ -151,32 +151,43 @@ export default function TaskCenter() {
         )}
       </motion.div>
 
-      {/* Upgrade teaser */}
-      {showUpgrade && !dailyDone && (
+      {/* #3 Upgrade teaser — visible from Day 1, even after daily tasks done */}
+      {showUpgrade && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5"
+          className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4"
         >
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <ArrowUp size={16} className="text-amber-500" />
-                <span className="text-sm font-semibold text-amber-500">Upgrade Preview — VIP {upgradeBond.next_vip} {upgradeBond.next_name}</span>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-1">
+                <ArrowUp size={13} className="text-amber-500 shrink-0" />
+                <span className="text-xs font-bold text-amber-500 uppercase tracking-wide">Unlock VIP {upgradeBond.next_vip} · {upgradeBond.next_name}</span>
               </div>
-              <p className="text-sm text-muted-foreground">{upgradeBond.bond_name}</p>
-              <p className="text-xs text-muted-foreground">
-                Trust fee: <span className="text-amber-400 font-medium">{formatUGX(upgradeBond.trust_fee)}</span>
-                {' · '}Profit up to: <span className="text-emerald-400 font-medium">{formatUGX(upgradeBond.profit_high)}</span>
-              </p>
+              <p className="text-sm font-semibold text-foreground truncate">{upgradeBond.bond_name}</p>
             </div>
             <button
-              onClick={() => navigate('/dashboard/vip')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors shrink-0 ml-4"
+              onClick={() => navigate('/dashboard/deposit')}
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 transition-colors shrink-0"
             >
-              Upgrade <ChevronRight size={14} />
+              Upgrade <ChevronRight size={12} />
             </button>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-muted/40 p-2.5">
+              <p className="text-[10px] text-muted-foreground mb-0.5">Your bonds earn up to</p>
+              <p className="text-xs font-bold text-muted-foreground">{formatUGX(vipData?.profit_max ?? 0)}<span className="font-normal text-[10px]">/sale</span></p>
+            </div>
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5">
+              <p className="text-[10px] text-emerald-400 mb-0.5">VIP {upgradeBond.next_vip} earns up to</p>
+              <p className="text-xs font-bold text-emerald-400">{formatUGX(upgradeBond.profit_high)}<span className="font-normal text-[10px]">/sale</span></p>
+            </div>
+          </div>
+          {dailyDone && (
+            <p className="text-[11px] text-amber-400 mt-2.5 text-center font-medium">
+              ⚡ Upgrade while you wait — your new tasks start when the timer hits zero
+            </p>
+          )}
         </motion.div>
       )}
 
