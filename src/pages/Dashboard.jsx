@@ -262,7 +262,7 @@ function DailyDashboard({ user, displayName }) {
               <BookOpen size={16} className="text-emerald-400 shrink-0" />
               <div className="min-w-0">
                 <p className="text-xs font-semibold leading-none">Teacher</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Learn how it works</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Learn how</p>
               </div>
             </div>
           </Link>
