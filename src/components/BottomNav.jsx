@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Wallet, CheckSquare, TrendingUp, BarChart2,
-  Lock, X, Zap, ArrowRight, CalendarClock,
+  Lock, X, Zap, ArrowRight, CalendarClock, Users,
 } from 'lucide-react';
 import { playSound } from '@/lib/sound';
 import { getTaskFlow } from '@/lib/taskFlowStore';
@@ -190,8 +190,8 @@ export default function BottomNav() {
             </button>
           )}
 
-          {/* Portfolio always right */}
-          {renderLink({ icon: TrendingUp, label: 'Portfolio', path: '/dashboard/portfolio' })}
+          {/* Team always right */}
+          {renderLink({ icon: Users, label: 'Team', path: '/dashboard/referrals' })}
         </div>
       </nav>
 

@@ -19,6 +19,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Dashboard from '@/pages/Dashboard';
 import VipLevels from '@/pages/VipLevels';
 import DailyGift from '@/pages/DailyGift';
+import CheckIn from '@/pages/CheckIn';
 import TaskCenter from '@/pages/TaskCenter';
 import BuyerSelection from '@/pages/BuyerSelection';
 import SalesContract from '@/pages/SalesContract';
@@ -81,6 +82,7 @@ function App() {
                   <Route path="/dashboard/tasks/claim" element={<ClaimProfits />} />
                   <Route path="/dashboard/vip" element={<VipLevels />} />
                   <Route path="/dashboard/gift" element={<DailyGift />} />
+                  <Route path="/dashboard/checkin" element={<CheckIn />} />
                   <Route path="/dashboard/referrals" element={<Referrals />} />
                   <Route path="/dashboard/achievements" element={<Achievements />} />
                   <Route path="/dashboard/support" element={<Support />} />

@@ -6,6 +6,7 @@ import CountUp from '@/components/ui/count-up';
 import { formatUGX, VIP_LEVELS } from '@/lib/vipData';
 import { getDeposits, getWalletBalance, getBonusBalance } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
+import { getTotalBondIncome } from '@/lib/bondStore';
 import { useAuth } from '@/lib/AuthContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -84,11 +85,14 @@ export default function Portfolio() {
       status: 'active',
     }));
 
+    const totalProfits = getTotalBondIncome(user.id);
+
     setData({
       walletBalance,
       totalDeposited,
       totalWithdrawn,
       bonusBalance,
+      totalProfits,
       tasksCompleted: taskState.totalCompleted ?? 0,
       currentDay: taskState.sessionDay ?? 1,
       vip,
@@ -103,6 +107,7 @@ export default function Portfolio() {
 
   const summaryCards = [
     { label: 'Wallet Balance', value: data.walletBalance, color: 'from-emerald-500 to-teal-600', numeric: true },
+    { label: 'Total Profits', value: data.totalProfits, color: 'from-green-400 to-emerald-500', numeric: true },
     { label: 'Total Deposited', value: data.totalDeposited, color: 'from-sky-400 to-blue-500', numeric: true },
     { label: 'Total Withdrawn', value: data.totalWithdrawn, color: 'from-rose-400 to-red-500', numeric: true },
     { label: 'Tasks Completed', value: data.tasksCompleted, color: 'from-violet-400 to-purple-500', numeric: false },
@@ -128,7 +133,7 @@ export default function Portfolio() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {summaryCards.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
             <GlassCard glow hover>

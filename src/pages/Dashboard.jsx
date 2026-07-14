@@ -5,21 +5,22 @@ import {
   Wallet, TrendingUp, Crown, Users, Clock,
   Gift, Calendar, ArrowUpRight, Eye, EyeOff,
   ChevronRight, Sparkles, BarChart2, Landmark, Globe, Star, Gem,
-  CheckSquare, Zap, Award, BookOpen, RefreshCw, X,
+  CheckSquare, Zap, Award, BookOpen, RefreshCw, X, LifeBuoy,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { CelebrationOverlay } from '@/components/ui/Celebration';
 import { useAuth } from '@/lib/AuthContext';
 import { formatUGX, formatUGXShort, VIP_LEVELS, getBondsPerDay } from '@/lib/vipData';
-import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
+import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable, addGiftCredit } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { playSound } from '@/lib/sound';
 import { getBondConfig, getBondImages } from '@/lib/investData';
 import {
   getActiveBonds, checkAndCreditDailyProfits, getTodaysBondIncome,
-  getTotalInvested, getMsUntilNextCredit,
+  getTotalInvested, getMsUntilNextCredit, getTotalBondIncome,
 } from '@/lib/bondStore';
+import { getPaymentSettings } from '@/lib/paymentSettings';
 import { getTaskFlow, isSalesEligible, activateSalesFlow } from '@/lib/taskFlowStore';
 import { syncReferralRewards } from '@/lib/referralStore';
 
@@ -55,7 +56,7 @@ function DailyDashboard({ user, displayName }) {
 
   const [stats, setStats] = useState({
     balance: 0, bonus: 0, bonusWithdrawable: false,
-    activeBonds: [], todayIncome: 0, totalInvested: 0,
+    activeBonds: [], todayIncome: 0, totalInvested: 0, totalBondIncome: 0,
     vip: VIP_LEVELS[0], nextVip: VIP_LEVELS[1], amountNeeded: 0,
   });
 
@@ -82,10 +83,11 @@ function DailyDashboard({ user, displayName }) {
     const activeBonds = getActiveBonds(user.id);
     const todayIncome = getTodaysBondIncome(user.id);
     const totalInvested = getTotalInvested(user.id);
+    const totalBondIncome = getTotalBondIncome(user.id);
     const bonus = getBonusBalance();
     const bonusWithdrawable = isBonusWithdrawable();
 
-    setStats({ balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, vip, nextVip, amountNeeded });
+    setStats({ balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, vip, nextVip, amountNeeded });
     setSalesEligible(isSalesEligible());
   }, [user?.id]);
 
@@ -96,7 +98,14 @@ function DailyDashboard({ user, displayName }) {
     return () => clearInterval(id);
   }, []);
 
-  const { balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, vip, nextVip, amountNeeded } = stats;
+  const { balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, vip, nextVip, amountNeeded } = stats;
+
+  function handleHelp() {
+    const { support_telegram_link } = getPaymentSettings();
+    if (support_telegram_link) window.open(support_telegram_link, '_blank');
+    else navigate('/dashboard/support');
+    playSound('click');
+  }
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto">
@@ -155,24 +164,28 @@ function DailyDashboard({ user, displayName }) {
       </motion.div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-5 gap-2">
         {[
           { label: 'Recharge', icon: RefreshCw, to: '/dashboard/deposit', color: 'text-emerald-500' },
           { label: 'Withdraw', icon: ArrowUpRight, to: '/dashboard/withdrawals', color: 'text-rose-500' },
-          { label: 'Daily Gift', icon: Gift, to: '/dashboard/gift', color: 'text-amber-500' },
-          { label: 'Check-in', icon: Calendar, to: '/dashboard/gift', color: 'text-sky-500' },
-        ].map((a) => (
-          <Link key={a.label} to={a.to} onClick={() => playSound('click')}>
-            <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl glass hover:bg-muted/40 transition-colors">
-              <a.icon size={18} className={a.color} />
-              <span className="text-[11px] font-medium text-center leading-tight">{a.label}</span>
+          { label: 'Gift', icon: Gift, to: '/dashboard/gift', color: 'text-amber-500' },
+          { label: 'Check-in', icon: Calendar, to: '/dashboard/checkin', color: 'text-sky-500' },
+          { label: 'Help', icon: LifeBuoy, action: handleHelp, color: 'text-purple-400' },
+        ].map((a) => {
+          const inner = (
+            <div className="flex flex-col items-center gap-1 py-3 rounded-xl glass hover:bg-muted/40 transition-colors">
+              <a.icon size={17} className={a.color} />
+              <span className="text-[10px] font-medium text-center leading-tight">{a.label}</span>
             </div>
-          </Link>
-        ))}
+          );
+          return a.action
+            ? <button key={a.label} onClick={a.action} className="w-full">{inner}</button>
+            : <Link key={a.label} to={a.to} onClick={() => playSound('click')}>{inner}</Link>;
+        })}
       </div>
 
-      {/* Welcome bonus card */}
-      {bonus > 0 && (
+      {/* Welcome bonus card — hidden once claimed */}
+      {bonus > 0 && !localStorage.getItem('bondify_bonus_claimed') && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <div className={`rounded-2xl border p-4 ${bonusWithdrawable ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
             <div className="flex items-start gap-3">
@@ -189,11 +202,17 @@ function DailyDashboard({ user, displayName }) {
               </div>
             </div>
             {bonusWithdrawable && (
-              <Link to="/dashboard/withdrawals" onClick={() => playSound('click')}>
-                <button className="mt-3 w-full py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold">
-                  Withdraw My Bonus →
-                </button>
-              </Link>
+              <button
+                onClick={() => {
+                  addGiftCredit(10000);
+                  localStorage.setItem('bondify_bonus_claimed', '1');
+                  playSound('click');
+                  navigate('/dashboard/withdrawals');
+                }}
+                className="mt-3 w-full py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold"
+              >
+                Withdraw My Bonus →
+              </button>
             )}
             {!bonusWithdrawable && (
               <Link to="/dashboard/deposit" onClick={() => playSound('click')}>
@@ -210,7 +229,7 @@ function DailyDashboard({ user, displayName }) {
       <div className="grid grid-cols-2 gap-2">
         {[
           { label: 'Wallet Balance', value: balance, numeric: true, icon: Wallet, color: 'from-emerald-500 to-teal-600', hide: true },
-          { label: "Today's Earnings", value: todayIncome, numeric: true, icon: TrendingUp, color: 'from-green-400 to-emerald-500' },
+          { label: 'Total Profits', value: totalBondIncome, numeric: true, icon: TrendingUp, color: 'from-green-400 to-emerald-500' },
           { label: 'Active Bonds', value: activeBonds.length, numeric: false, icon: BarChart2, color: 'from-sky-400 to-blue-500', suffix: ' bonds' },
           { label: 'Total Invested', value: totalInvested, numeric: true, icon: Crown, color: 'from-amber-400 to-yellow-500' },
         ].map((card, i) => (
@@ -242,8 +261,8 @@ function DailyDashboard({ user, displayName }) {
             <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
               <BookOpen size={16} className="text-emerald-400 shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-semibold leading-none">How It Works</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Daily earning guide</p>
+                <p className="text-xs font-semibold leading-none">Teacher</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Learn how it works</p>
               </div>
             </div>
           </Link>
@@ -253,8 +272,8 @@ function DailyDashboard({ user, displayName }) {
             <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
               <Award size={16} className="text-amber-400 shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-semibold leading-none">My Certificate</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Investor certificate</p>
+                <p className="text-xs font-semibold leading-none">Certificate</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">My certificate</p>
               </div>
             </div>
           </Link>
@@ -435,6 +454,7 @@ function DailyDashboard({ user, displayName }) {
 
 // ─── SALES TASKS DASHBOARD ───────────────────────────────────────────────────
 function SalesDashboard({ user, displayName }) {
+  const navigate = useNavigate();
   const [balanceHidden, setBalanceHidden] = useState(false);
 
   const [stats, setStats] = useState({
@@ -482,20 +502,25 @@ function SalesDashboard({ user, displayName }) {
       </motion.div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-5 gap-2">
         {[
           { label: 'Recharge', icon: RefreshCw, to: '/dashboard/deposit', color: 'text-emerald-500' },
           { label: 'Withdraw', icon: ArrowUpRight, to: '/dashboard/withdrawals', color: 'text-rose-500' },
-          { label: 'Daily Gift', icon: Gift, to: '/dashboard/gift', color: 'text-amber-500' },
-          { label: 'My Tasks', icon: CheckSquare, to: '/dashboard/tasks', color: 'text-violet-500' },
-        ].map((a) => (
-          <Link key={a.label} to={a.to} onClick={() => playSound('click')}>
-            <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl glass hover:bg-muted/40 transition-colors">
-              <a.icon size={18} className={a.color} />
-              <span className="text-[11px] font-medium text-center leading-tight">{a.label}</span>
+          { label: 'Gift', icon: Gift, to: '/dashboard/gift', color: 'text-amber-500' },
+          { label: 'Tasks', icon: CheckSquare, to: '/dashboard/tasks', color: 'text-violet-500' },
+          { label: 'Help', icon: LifeBuoy, color: 'text-purple-400',
+            action: () => { const { support_telegram_link } = getPaymentSettings(); if (support_telegram_link) window.open(support_telegram_link, '_blank'); else navigate('/dashboard/support'); playSound('click'); } },
+        ].map((a) => {
+          const inner = (
+            <div className="flex flex-col items-center gap-1 py-3 rounded-xl glass hover:bg-muted/40 transition-colors">
+              <a.icon size={17} className={a.color} />
+              <span className="text-[10px] font-medium text-center leading-tight">{a.label}</span>
             </div>
-          </Link>
-        ))}
+          );
+          return a.action
+            ? <button key={a.label} onClick={a.action} className="w-full">{inner}</button>
+            : <Link key={a.label} to={a.to} onClick={() => playSound('click')}>{inner}</Link>;
+        })}
       </div>
 
       {/* Stats + Learn/Cert section */}

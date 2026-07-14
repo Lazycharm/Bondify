@@ -22,10 +22,7 @@ import ThemeLogo from '@/components/ThemeLogo';
 const CORE_NAV = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: TrendingUp, label: 'Portfolio', path: '/dashboard/portfolio' },
-  { icon: Gift, label: 'Daily Gift', path: '/dashboard/gift' },
-  { icon: Users, label: 'Referrals', path: '/dashboard/referrals' },
   { icon: Crown, label: 'VIP Levels', path: '/dashboard/vip' },
-  { icon: User, label: 'Profile', path: '/dashboard/profile' },
 ];
 
 // Locked in daily mode, unlocked in sales mode
@@ -166,24 +163,6 @@ export default function Layout() {
               </Link>
             );
           })}
-        </div>
-
-        {/* Learn + Certificate */}
-        <div className="pt-2 mt-2 border-t border-border/50 space-y-0.5">
-          <Link
-            to={isDaily ? '/dashboard/learn/daily' : '/dashboard/learn/sales'}
-            onClick={() => { playSound('click'); setMobileOpen(false); }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            <BookOpen size={18} /> How It Works
-          </Link>
-          <Link
-            to="/dashboard/certificate"
-            onClick={() => { playSound('click'); setMobileOpen(false); }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            <Award size={18} /> Certificate
-          </Link>
         </div>
 
         {/* Support */}

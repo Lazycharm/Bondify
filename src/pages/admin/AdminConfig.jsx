@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   Save, Send, CheckCircle2, Smartphone, Bot, Shield,
-  Camera, BarChart2, Percent, Clock, Users, CreditCard, Lock, Wallet,
+  Camera, BarChart2, Percent, Clock, Users, CreditCard, Lock, Wallet, Gift,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { getPaymentSettings, savePaymentSettings } from '@/lib/paymentSettings';
@@ -268,6 +268,20 @@ export default function AdminConfig() {
         <SectionHeader icon={Smartphone} color="bg-sky-400" title="Support & Access" subtitle="Support link and admin email list." />
         <Field label="Telegram Support Link" id="support_telegram_link" value={form.support_telegram_link || ''} onChange={set('support_telegram_link')} placeholder="https://t.me/yoursupportusername" hint="Users land here when they tap Support in the sidebar." />
         <Field label="Admin Emails" id="admin_emails" value={form.admin_emails} onChange={set('admin_emails')} placeholder="admin@example.com, another@example.com" hint="Comma-separated. Leave blank to allow any logged-in user (not recommended)." />
+      </GlassCard>
+
+      {/* ─── Daily Gift Settings ─────────────────────────────── */}
+      <GlassCard hover={false} className="space-y-4">
+        <SectionHeader icon={Gift} color="bg-amber-500" title="Daily Gift Settings" subtitle="Gift amount credited when users open the 3:30–4:00 PM gift window." />
+        <Field
+          label="Gift Amount (UGX)"
+          id="daily_gift_amount"
+          type="number"
+          value={form.daily_gift_amount || '1000'}
+          onChange={set('daily_gift_amount')}
+          placeholder="1000"
+          hint="Amount credited to user wallet when they open the daily gift box. Set 0 to disable gifts."
+        />
       </GlassCard>
 
       {/* Save platform settings */}

@@ -14,6 +14,7 @@ export default function Referrals() {
   const [earnings, setEarnings] = useState({ lv1: { count: 0, earned: 0 }, lv2: { count: 0, earned: 0 }, lv3: { count: 0, earned: 0 }, total: 0 });
   const [rates, setRates] = useState({ 1: 0.05, 2: 0.02, 3: 0.01 });
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const myCode = getMyReferralCode(user?.id);
   const referralLink = getReferralLink(user?.id);
@@ -29,6 +30,13 @@ export default function Referrals() {
     playSound('click');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyCode = () => {
+    navigator.clipboard?.writeText(myCode);
+    playSound('click');
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
   };
 
   const shareOn = (platform) => {
@@ -111,9 +119,13 @@ export default function Referrals() {
         <div className="glass rounded-2xl p-4 border border-emerald-500/20">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold">Your Referral Link</p>
-            <div className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+            <button
+              onClick={copyCode}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+            >
               <span className="text-[10px] font-bold text-emerald-400 tracking-widest">{myCode}</span>
-            </div>
+              {copiedCode ? <CheckCircle2 size={11} className="text-emerald-500" /> : <Copy size={11} className="text-emerald-400" />}
+            </button>
           </div>
 
           {/* Attractive earn teaser */}

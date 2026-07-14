@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Wallet, Gift, Users, Clock, Search,
-  ArrowUpRight, ArrowDownLeft, Plus, ChevronRight, BarChart2,
+  ArrowUpRight, ArrowDownLeft, Plus, ChevronRight, BarChart2, TrendingUp,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
 import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
-import { getActiveBonds, getTotalInvested } from '@/lib/bondStore';
+import { getActiveBonds, getTotalInvested, getTotalBondIncome } from '@/lib/bondStore';
 import { calcReferralEarnings } from '@/lib/referralStore';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
@@ -34,6 +34,7 @@ export default function WalletPage() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [referralEarned, setReferralEarned] = useState(0);
   const [totalInvested, setTotalInvested] = useState(0);
+  const [totalProfits, setTotalProfits] = useState(0);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function WalletPage() {
       const e = calcReferralEarnings(user.id);
       setReferralEarned(e.total);
       setTotalInvested(getTotalInvested(user.id));
+      setTotalProfits(getTotalBondIncome(user.id));
     }
   }, [user]);
 
@@ -60,6 +62,7 @@ export default function WalletPage() {
 
   const balanceCards = [
     { label: 'Main Balance', value: balance, icon: Wallet, color: 'from-emerald-500 to-teal-600' },
+    { label: 'Total Profits', value: totalProfits, icon: TrendingUp, color: 'from-green-400 to-emerald-500' },
     { label: 'Welcome Bonus', value: bonus, icon: Gift, color: 'from-amber-400 to-yellow-500', sub: bonusUnlocked ? 'Withdrawable now!' : 'Recharge to unlock' },
     { label: 'Referral Earnings', value: referralEarned, icon: Users, color: 'from-violet-400 to-purple-500' },
     { label: 'Bonds Invested', value: totalInvested, icon: BarChart2, color: 'from-sky-400 to-blue-500' },
@@ -83,7 +86,7 @@ export default function WalletPage() {
       </div>
 
       {/* Balance cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {balanceCards.map((b, i) => (
           <motion.div key={b.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
             <GlassCard glow hover>
