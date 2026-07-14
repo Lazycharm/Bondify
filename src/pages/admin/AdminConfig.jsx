@@ -8,6 +8,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import { getPaymentSettings, savePaymentSettings } from '@/lib/paymentSettings';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { playSound } from '@/lib/sound';
+import { savePlatformConfigToSupabase } from '@/lib/supabase_ops';
 import { getBondConfig, saveBondConfig, getBondImages, saveBondImages } from '@/lib/investData';
 
 function Field({ label, id, value, onChange, placeholder, type = 'text', hint, suffix }) {
@@ -55,8 +56,9 @@ export default function AdminConfig() {
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
-  function handleSave() {
+  async function handleSave() {
     savePaymentSettings(form);
+    savePlatformConfigToSupabase(form).catch(() => {}); // best-effort background sync
     playSound('success');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);

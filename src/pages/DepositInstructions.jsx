@@ -8,6 +8,7 @@ import { addDeposit } from '@/lib/depositStore';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { playSound } from '@/lib/sound';
+import { loadPlatformConfigFromSupabase, saveDepositToSupabase } from '@/lib/supabase_ops';
 
 function MTNLogo({ big }) {
   return (
@@ -65,7 +66,9 @@ export default function DepositInstructions() {
     const d = JSON.parse(raw);
     if (!d.network) { navigate('/dashboard/deposit/gateway'); return; }
     setDraft(d);
+    // Load from localStorage immediately, then sync from Supabase
     setSettings(getPaymentSettings());
+    loadPlatformConfigFromSupabase().then((s) => { if (s) setSettings(s); });
   }, []);
 
   if (!draft) return null;
@@ -79,7 +82,23 @@ export default function DepositInstructions() {
     setSubmitting(true);
     setError('');
     try {
-      const deposit = addDeposit({
+      // Save to Supabase (primary, cross-device)
+      let depositId = `DEP-${Date.now()}`;
+      try {
+        const saved = await saveDepositToSupabase({
+          userId: user?.id,
+          userEmail: user?.email,
+          amount: draft.amount,
+          network: draft.network,
+          userPhone: draft.phone,
+          userSms: sms,
+        });
+        depositId = saved.id;
+      } catch {
+        // Supabase save failed — fall back to localStorage only
+      }
+      // Also save locally so the user sees it immediately
+      addDeposit({
         userId: user?.id,
         userEmail: user?.email,
         amount: draft.amount,
@@ -88,7 +107,7 @@ export default function DepositInstructions() {
         userSms: sms,
       });
       await sendTelegram(
-        `💰 <b>New Deposit Request</b>\n\nUser: ${user?.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nUser Phone: ${draft.phone}\nSMS Ref: ${sms}\nDeposit ID: ${deposit.id}`
+        `💰 <b>New Deposit Request</b>\n\nUser: ${user?.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nUser Phone: ${draft.phone}\nSMS Ref: ${sms}\nDeposit ID: ${depositId}`
       );
       localStorage.removeItem('bondify_deposit_draft');
       playSound('success');

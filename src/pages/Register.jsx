@@ -9,6 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { sendTelegram } from "@/lib/telegramNotify";
 import { storeRefCode, getStoredRefCode, addReferral, clearRefCode } from "@/lib/referralStore";
+import { saveReferralToSupabase } from "@/lib/supabase_ops";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -47,6 +48,7 @@ export default function Register() {
       const refCode = inviteCode.trim() || getStoredRefCode();
       if (refCode) {
         addReferral({ referrerId: refCode, referredEmail: email, referredId: data?.user?.id });
+        saveReferralToSupabase({ referrerId: refCode, referredEmail: email, referredUserId: data?.user?.id }).catch(() => {});
         clearRefCode();
       }
 
@@ -72,7 +74,7 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
-      subtitle="Join the network — your UGX 10,000 welcome bonus is waiting"
+      subtitle="Join, your UGX 10,000 welcome bonus is waiting"
       footer={
         <>
           Already have an account?{" "}

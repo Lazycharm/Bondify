@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, Search } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Search, RefreshCw } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
-import { getWithdrawals, updateWithdrawal } from '@/lib/withdrawalStore';
+import { getAllWithdrawalsFromSupabase, updateWithdrawalInSupabase } from '@/lib/supabase_ops';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { addNotification } from '@/lib/notificationStore';
@@ -19,32 +19,50 @@ function formatDate(iso) {
 }
 
 export default function AdminWithdrawals() {
-  const [withdrawals, setWithdrawals] = useState(() => getWithdrawals());
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
+  async function loadWithdrawals() {
+    setLoading(true);
+    try {
+      const data = await getAllWithdrawalsFromSupabase();
+      setWithdrawals(data);
+    } catch {
+      setWithdrawals([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadWithdrawals(); }, []);
+
   const filtered = withdrawals.filter((w) => {
     const matchFilter = filter === 'all' || w.status === filter;
-    const matchSearch = !search || w.userEmail?.toLowerCase().includes(search.toLowerCase()) || w.id?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search || w.userEmail?.toLowerCase().includes(search.toLowerCase()) || String(w.id)?.toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
 
   const act = useCallback(async (id, status) => {
-    const updated = updateWithdrawal(id, status);
-    if (!updated) return;
-    playSound(status === 'approved' ? 'success' : 'click');
-    await sendTelegram(
-      `${status === 'approved' ? '✅' : '❌'} Withdrawal <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nMethod: ${updated.method}\nAccount: ${updated.account}`
-    );
-    if (updated.userId) {
-      addNotification(updated.userId, {
-        type: status === 'approved' ? 'success' : 'error',
-        message: status === 'approved'
-          ? `✅ Your withdrawal of ${formatUGX(updated.amount)} has been approved and is being sent to ${updated.account}.`
-          : `❌ Your withdrawal of ${formatUGX(updated.amount)} was rejected. The amount has been returned to your wallet.`,
-      });
+    try {
+      const updated = await updateWithdrawalInSupabase(id, status);
+      playSound(status === 'approved' ? 'success' : 'click');
+      await sendTelegram(
+        `${status === 'approved' ? '✅' : '❌'} Withdrawal <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nMethod: ${updated.method}\nAccount: ${updated.account}`
+      );
+      if (updated.userId) {
+        addNotification(updated.userId, {
+          type: status === 'approved' ? 'success' : 'error',
+          message: status === 'approved'
+            ? `✅ Your withdrawal of ${formatUGX(updated.amount)} has been approved and is being sent to ${updated.account}.`
+            : `❌ Your withdrawal of ${formatUGX(updated.amount)} was rejected. The amount has been returned to your wallet.`,
+        });
+      }
+      setWithdrawals((prev) => prev.map((w) => w.id === id ? { ...w, status } : w));
+    } catch {
+      // silently fail
     }
-    setWithdrawals(getWithdrawals());
   }, []);
 
   return (
@@ -54,8 +72,11 @@ export default function AdminWithdrawals() {
           <h1 className="text-2xl font-bold">Withdrawal Requests</h1>
           <p className="text-sm text-muted-foreground mt-1">Approve or reject pending withdrawal requests.</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock size={14} /> {withdrawals.filter((w) => w.status === 'pending').length} pending
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span><Clock size={14} className="inline mr-1" />{withdrawals.filter((w) => w.status === 'pending').length} pending</span>
+          <button onClick={loadWithdrawals} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border hover:bg-muted/30 transition-colors text-xs">
+            <RefreshCw size={12} /> Refresh
+          </button>
         </div>
       </div>
 
@@ -83,7 +104,9 @@ export default function AdminWithdrawals() {
       </div>
 
       <GlassCard hover={false} className="overflow-hidden p-0">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-muted-foreground text-sm">Loading withdrawals…</div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground text-sm">No withdrawal requests found.</div>
         ) : (
           <div className="divide-y divide-border">
@@ -105,7 +128,7 @@ export default function AdminWithdrawals() {
                   className="grid grid-cols-12 gap-2 px-5 py-4 items-center hover:bg-muted/20 transition-colors"
                 >
                   <div className="col-span-1">
-                    <p className="text-[10px] font-mono text-muted-foreground truncate">{w.id?.split('-').slice(-1)[0]}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">{String(w.id).slice(-8)}</p>
                     <p className="text-[9px] text-muted-foreground/60">{formatDate(w.created_at)}</p>
                   </div>
                   <div className="col-span-3">

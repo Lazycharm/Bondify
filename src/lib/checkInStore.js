@@ -4,8 +4,8 @@ const KEY = 'bondify_checkin';
 export const CHECKIN_BONUS = 300;
 
 export function getCheckInData() {
-  try { return JSON.parse(localStorage.getItem(KEY) || '{"totalBonus":0,"lastCheckin":null,"history":[]}'); }
-  catch { return { totalBonus: 0, lastCheckin: null, history: [] }; }
+  try { return JSON.parse(localStorage.getItem(KEY) || '{"lastCheckin":null,"history":[]}'); }
+  catch { return { lastCheckin: null, history: [] }; }
 }
 
 export function canCheckIn() {
@@ -25,19 +25,11 @@ export function doCheckIn() {
   const data = getCheckInData();
   const now = new Date().toISOString();
   const updated = {
-    totalBonus: (data.totalBonus || 0) + CHECKIN_BONUS,
     lastCheckin: now,
     history: [now, ...(data.history || [])].slice(0, 60),
   };
   localStorage.setItem(KEY, JSON.stringify(updated));
+  // Credit immediately to wallet — no accumulation needed
+  addGiftCredit(CHECKIN_BONUS);
   return CHECKIN_BONUS;
-}
-
-export function withdrawCheckInBonus() {
-  const data = getCheckInData();
-  const amount = data.totalBonus || 0;
-  if (amount <= 0) return 0;
-  addGiftCredit(amount);
-  localStorage.setItem(KEY, JSON.stringify({ ...data, totalBonus: 0 }));
-  return amount;
 }

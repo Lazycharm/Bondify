@@ -9,7 +9,6 @@ import Navbar from '@/components/Navbar';
 import ParticleBackground from '@/components/ParticleBackground';
 import GlassCard from '@/components/ui/GlassCard';
 import { getBondConfig } from '@/lib/investData';
-import ThemeLogo from '@/components/ThemeLogo';
 
 const STEPS = [
   { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add funds to your Bondify wallet through our secure payment gateway. Low minimum, takes just 2 minutes.' },

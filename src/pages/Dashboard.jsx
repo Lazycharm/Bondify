@@ -2,17 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Wallet, TrendingUp, Crown, Users, Clock,
+  Wallet, TrendingUp, Crown, Clock,
   Gift, Calendar, ArrowUpRight, Eye, EyeOff,
   ChevronRight, Sparkles, BarChart2, Landmark, Globe, Star, Gem,
   CheckSquare, Zap, Award, BookOpen, RefreshCw, X, LifeBuoy,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
-import MagneticButton from '@/components/ui/MagneticButton';
 import { CelebrationOverlay } from '@/components/ui/Celebration';
 import { useAuth } from '@/lib/AuthContext';
 import { formatUGX, formatUGXShort, VIP_LEVELS, getBondsPerDay } from '@/lib/vipData';
-import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable, addGiftCredit } from '@/lib/depositStore';
+import { getWalletBalance, getBonusBalance, isBonusWithdrawable, addGiftCredit } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { playSound } from '@/lib/sound';
 import { getBondConfig, getBondImages } from '@/lib/investData';
@@ -21,8 +20,9 @@ import {
   getTotalInvested, getMsUntilNextCredit, getTotalBondIncome,
 } from '@/lib/bondStore';
 import { getPaymentSettings } from '@/lib/paymentSettings';
-import { getTaskFlow, isSalesEligible, activateSalesFlow } from '@/lib/taskFlowStore';
+import { getTaskFlow, isSalesEligible, activateSalesFlow, checkAndSetSalesEligibility } from '@/lib/taskFlowStore';
 import { syncReferralRewards } from '@/lib/referralStore';
+import { syncAllUserData, uploadWalletData } from '@/lib/supabase_ops';
 
 const LEVEL_ICONS = [TrendingUp, BarChart2, Landmark, Globe, Star, Gem, Crown];
 
@@ -68,27 +68,40 @@ function DailyDashboard({ user, displayName }) {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Credit daily profits
-    const newCredit = checkAndCreditDailyProfits(user.id);
-    if (newCredit > 0) { setTodayCreditAmount(newCredit); setShowCreditBanner(true); }
+    function loadStats() {
+      const newCredit = checkAndCreditDailyProfits(user.id);
+      if (newCredit > 0) {
+        setTodayCreditAmount(newCredit);
+        setShowCreditBanner(true);
+        uploadWalletData(user.id); // sync new bond profits to Supabase
+      }
+      syncReferralRewards(user.id);
 
-    // Sync referral rewards
-    syncReferralRewards(user.id);
+      const balance = getWalletBalance();
+      const vip = getCurrentVip(balance);
+      const vipIdx = VIP_LEVELS.findIndex((v) => v.level === vip.level);
+      const nextVip = VIP_LEVELS[vipIdx + 1] ?? null;
+      const amountNeeded = nextVip ? Math.max(0, nextVip.min_investment - balance) : 0;
+      const activeBonds = getActiveBonds(user.id);
+      const todayIncome = getTodaysBondIncome(user.id);
+      const totalInvested = getTotalInvested(user.id);
+      const totalBondIncome = getTotalBondIncome(user.id);
+      const bonus = getBonusBalance();
+      const bonusWithdrawable = isBonusWithdrawable();
 
-    const balance = getWalletBalance();
-    const vip = getCurrentVip(balance);
-    const vipIdx = VIP_LEVELS.findIndex((v) => v.level === vip.level);
-    const nextVip = VIP_LEVELS[vipIdx + 1] ?? null;
-    const amountNeeded = nextVip ? Math.max(0, nextVip.min_investment - balance) : 0;
-    const activeBonds = getActiveBonds(user.id);
-    const todayIncome = getTodaysBondIncome(user.id);
-    const totalInvested = getTotalInvested(user.id);
-    const totalBondIncome = getTotalBondIncome(user.id);
-    const bonus = getBonusBalance();
-    const bonusWithdrawable = isBonusWithdrawable();
+      setStats({ balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, vip, nextVip, amountNeeded });
+      setSalesEligible(isSalesEligible());
+    }
 
-    setStats({ balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, vip, nextVip, amountNeeded });
-    setSalesEligible(isSalesEligible());
+    loadStats();
+
+    // Sync from Supabase then refresh stats so all devices see the same data
+    syncAllUserData(user.id).then((results) => {
+      // results[0] is the deposits array from syncUserDeposits
+      const deposits = Array.isArray(results?.[0]) ? results[0] : [];
+      if (deposits.length) checkAndSetSalesEligibility(deposits);
+      loadStats();
+    });
   }, [user?.id]);
 
   useEffect(() => {

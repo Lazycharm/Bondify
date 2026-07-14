@@ -7,6 +7,8 @@ import { formatUGX } from '@/lib/vipData';
 import { addGiftCredit } from '@/lib/depositStore';
 import { getPaymentSettings } from '@/lib/paymentSettings';
 import { playSound } from '@/lib/sound';
+import { useAuth } from '@/lib/AuthContext';
+import { uploadWalletData } from '@/lib/supabase_ops';
 
 const GIFT_KEY = 'bondify_gift_v2';
 
@@ -41,6 +43,7 @@ function fmtMs(ms) {
 }
 
 export default function DailyGift() {
+  const { user } = useAuth();
   const [giftState, setGiftState] = useState(loadState);
   const [ws, setWs] = useState(getWindowStatus);
   const [countdown, setCountdown] = useState('');
@@ -83,6 +86,7 @@ export default function DailyGift() {
     setEarnedAmount(amount);
 
     addGiftCredit(amount);
+    if (user?.id) uploadWalletData(user.id); // sync gift credits to Supabase
     const updated = {
       lastClaimed: new Date().toDateString(),
       history: [{ date: new Date().toISOString(), amount }, ...(giftState.history || [])].slice(0, 30),
@@ -276,7 +280,7 @@ export default function DailyGift() {
       <div className="space-y-2 px-1">
         {[
           'Gift window: 3:30 PM – 4:00 PM daily',
-          'One gift per day — must be claimed during the window',
+          'One gift per day must be claimed during the window',
           'Gift amount is set by the platform and credited instantly',
         ].map((t) => (
           <div key={t} className="flex items-start gap-2 text-xs text-muted-foreground">

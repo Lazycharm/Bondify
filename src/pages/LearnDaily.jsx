@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, RefreshCw, BarChart2, Sparkles, ArrowUpRight, Users,
-  ChevronRight, Clock, Gift,
+  ChevronRight, Gift,
 } from 'lucide-react';
 
 const STEPS = [

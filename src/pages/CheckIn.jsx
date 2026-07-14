@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, CheckCircle2, Clock, ArrowUpRight } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
 import { fireConfetti } from '@/components/ui/Celebration';
-import { getCheckInData, doCheckIn, withdrawCheckInBonus, canCheckIn, msUntilNextCheckIn, CHECKIN_BONUS } from '@/lib/checkInStore';
+import { getCheckInData, doCheckIn, canCheckIn, msUntilNextCheckIn, CHECKIN_BONUS } from '@/lib/checkInStore';
+import { useAuth } from '@/lib/AuthContext';
+import { uploadWalletData } from '@/lib/supabase_ops';
 
 export default function CheckIn() {
+  const { user } = useAuth();
   const [data, setData] = useState(getCheckInData);
   const [countdown, setCountdown] = useState('');
   const [justCheckedIn, setJustCheckedIn] = useState(false);
@@ -39,15 +42,8 @@ export default function CheckIn() {
     setJustCheckedIn(true);
     playSound('success');
     fireConfetti({ particleCount: 60, spread: 80 });
+    if (user?.id) uploadWalletData(user.id); // sync gift credits to Supabase
     setTimeout(() => setJustCheckedIn(false), 2500);
-  }
-
-  function handleWithdraw() {
-    const amount = withdrawCheckInBonus();
-    if (amount > 0) {
-      playSound('success');
-      setData(getCheckInData());
-    }
   }
 
   // Calendar: last 35 days (5 rows × 7 cols)
@@ -59,7 +55,6 @@ export default function CheckIn() {
     return d;
   });
 
-  const totalBonus = data.totalBonus || 0;
   const daysCount = data.history?.length || 0;
 
   return (
@@ -71,30 +66,18 @@ export default function CheckIn() {
         </p>
       </motion.div>
 
-      {/* Cumulative bonus card */}
+      {/* Streak card */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <GlassCard hover={false}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Cumulative Check-in Bonus</p>
-              <p className="text-3xl font-black text-emerald-400">{formatUGX(totalBonus)}</p>
+              <p className="text-xs text-muted-foreground mb-1">Total Check-ins</p>
+              <p className="text-3xl font-black text-emerald-400">{daysCount} days</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {daysCount} day{daysCount !== 1 ? 's' : ''} checked in
+                Each check-in credits {formatUGX(CHECKIN_BONUS)} instantly to your wallet
               </p>
             </div>
-            <AnimatePresence>
-              {totalBonus > 0 && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={handleWithdraw}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/30"
-                >
-                  <ArrowUpRight size={14} /> Withdraw
-                </motion.button>
-              )}
-            </AnimatePresence>
+            <div className="text-4xl select-none">🔥</div>
           </div>
         </GlassCard>
       </motion.div>
@@ -216,9 +199,9 @@ export default function CheckIn() {
       {/* Info rules */}
       <div className="space-y-2 px-1">
         {[
-          `Daily check-in reward: ${formatUGX(CHECKIN_BONUS)}`,
-          'Check in once per 24 hours — timer resets automatically',
-          'Accumulated bonus can be withdrawn to your wallet anytime',
+          `Daily check-in reward: ${formatUGX(CHECKIN_BONUS)} — credited instantly to wallet`,
+          'Check in once per 24 hours and timer resets automatically',
+          'Rewards are added directly to your wallet balance — no withdrawal step needed',
         ].map((t) => (
           <div key={t} className="flex items-start gap-2 text-xs text-muted-foreground">
             <CheckCircle2 size={13} className="text-emerald-500 shrink-0 mt-0.5" />

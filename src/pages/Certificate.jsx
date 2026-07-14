@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Award, Download, Crown, Star } from 'lucide-react';
+import { ArrowLeft, Award, Crown, Star } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { VIP_LEVELS, formatUGX } from '@/lib/vipData';
 import { getWalletBalance, getUserDeposits } from '@/lib/depositStore';

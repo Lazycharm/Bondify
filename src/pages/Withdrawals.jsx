@@ -14,6 +14,7 @@ import {
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { playSound } from '@/lib/sound';
+import { saveWithdrawalToSupabase, syncUserWithdrawals } from '@/lib/supabase_ops';
 
 const PAYMENT_METHODS = [
   { id: 'mtn', name: 'MTN Mobile Money', color: 'from-yellow-400 to-amber-500' },
@@ -66,6 +67,13 @@ export default function Withdrawals() {
     setLockStatus(getWithdrawalLockStatus());
     setFeePct(getWithdrawalFeePct());
     setLimits(getWithdrawalLimits());
+
+    if (user?.id) {
+      syncUserWithdrawals(user.id).then(() => {
+        setHistory(getUserWithdrawals(user.id));
+        setBalance(getWalletBalance());
+      });
+    }
   }, [user]);
 
   // Update countdown every minute
@@ -88,6 +96,11 @@ export default function Withdrawals() {
 
     const result = addWithdrawal({ userId: user?.id, userEmail: user?.email, amount: amt, method, account, bypassLock });
     if (result?.error) { setError(result.error); return false; }
+
+    // Also save to Supabase for cross-device visibility
+    try {
+      await saveWithdrawalToSupabase({ userId: user?.id, userEmail: user?.email, amount: amt, method, account });
+    } catch { /* localStorage withdrawal already saved */ }
 
     await sendTelegram(
       `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${result.fee > 0 ? `\nFee (${feePct}%): ${formatUGX(result.fee)}\nNet payout: ${formatUGX(result.net_amount)}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${result.id}`

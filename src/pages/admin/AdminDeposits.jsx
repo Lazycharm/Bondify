@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, Download, Search, Filter } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Search, RefreshCw } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
-import { getDeposits, updateDeposit } from '@/lib/depositStore';
+import { getAllDepositsFromSupabase, updateDepositInSupabase } from '@/lib/supabase_ops';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { addNotification } from '@/lib/notificationStore';
@@ -19,32 +19,50 @@ function formatDate(iso) {
 }
 
 export default function AdminDeposits() {
-  const [deposits, setDeposits] = useState(() => getDeposits());
+  const [deposits, setDeposits] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
+  async function loadDeposits() {
+    setLoading(true);
+    try {
+      const data = await getAllDepositsFromSupabase();
+      setDeposits(data);
+    } catch {
+      setDeposits([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadDeposits(); }, []);
+
   const filtered = deposits.filter((d) => {
     const matchFilter = filter === 'all' || d.status === filter;
-    const matchSearch = !search || d.userEmail?.toLowerCase().includes(search.toLowerCase()) || d.id?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search || d.userEmail?.toLowerCase().includes(search.toLowerCase()) || String(d.id)?.toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
 
   const act = useCallback(async (id, status) => {
-    const updated = updateDeposit(id, status);
-    if (!updated) return;
-    playSound(status === 'approved' ? 'success' : 'click');
-    await sendTelegram(
-      `${status === 'approved' ? '✅' : '❌'} Deposit <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nNetwork: ${updated.network?.toUpperCase()}`
-    );
-    if (updated.userId) {
-      addNotification(updated.userId, {
-        type: status === 'approved' ? 'success' : 'error',
-        message: status === 'approved'
-          ? `✅ Your deposit of ${formatUGX(updated.amount)} has been approved and credited to your wallet.`
-          : `❌ Your deposit of ${formatUGX(updated.amount)} was rejected. Contact support if this is an error.`,
-      });
+    try {
+      const updated = await updateDepositInSupabase(id, status);
+      playSound(status === 'approved' ? 'success' : 'click');
+      await sendTelegram(
+        `${status === 'approved' ? '✅' : '❌'} Deposit <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nNetwork: ${updated.network?.toUpperCase()}`
+      );
+      if (updated.userId) {
+        addNotification(updated.userId, {
+          type: status === 'approved' ? 'success' : 'error',
+          message: status === 'approved'
+            ? `✅ Your deposit of ${formatUGX(updated.amount)} has been approved and credited to your wallet.`
+            : `❌ Your deposit of ${formatUGX(updated.amount)} was rejected. Contact support if this is an error.`,
+        });
+      }
+      setDeposits((prev) => prev.map((d) => d.id === id ? { ...d, status } : d));
+    } catch {
+      // silently fail — UI doesn't crash
     }
-    setDeposits(getDeposits());
   }, []);
 
   return (
@@ -54,8 +72,11 @@ export default function AdminDeposits() {
           <h1 className="text-2xl font-bold">Deposit Requests</h1>
           <p className="text-sm text-muted-foreground mt-1">Approve or reject pending deposits.</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock size={14} /> {deposits.filter((d) => d.status === 'pending').length} pending
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span><Clock size={14} className="inline mr-1" />{deposits.filter((d) => d.status === 'pending').length} pending</span>
+          <button onClick={loadDeposits} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border hover:bg-muted/30 transition-colors text-xs">
+            <RefreshCw size={12} /> Refresh
+          </button>
         </div>
       </div>
 
@@ -85,7 +106,9 @@ export default function AdminDeposits() {
 
       {/* Table */}
       <GlassCard hover={false} className="overflow-hidden p-0">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-muted-foreground text-sm">Loading deposits…</div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground text-sm">No deposits found.</div>
         ) : (
           <div className="divide-y divide-border">
@@ -94,7 +117,7 @@ export default function AdminDeposits() {
               <div className="col-span-3">User</div>
               <div className="col-span-2">Amount</div>
               <div className="col-span-1">Net</div>
-              <div className="col-span-2">Phone</div>
+              <div className="col-span-2">Ref</div>
               <div className="col-span-1">Status</div>
               <div className="col-span-2">Actions</div>
             </div>
@@ -107,7 +130,7 @@ export default function AdminDeposits() {
                   className="grid grid-cols-12 gap-2 px-5 py-4 items-center hover:bg-muted/20 transition-colors"
                 >
                   <div className="col-span-1">
-                    <p className="text-[10px] font-mono text-muted-foreground truncate">{d.id?.split('-').slice(-1)[0]}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">{String(d.id).slice(-8)}</p>
                     <p className="text-[9px] text-muted-foreground/60">{formatDate(d.created_at)}</p>
                   </div>
                   <div className="col-span-3">
@@ -121,7 +144,7 @@ export default function AdminDeposits() {
                     <span className="text-xs font-semibold uppercase">{d.network}</span>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs truncate">{d.userPhone}</p>
+                    <p className="text-xs truncate">{d.userSms}</p>
                   </div>
                   <div className="col-span-1">
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS[d.status]?.color}`}>

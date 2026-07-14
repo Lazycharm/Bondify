@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, BarChart2, Landmark, Globe, Star, Crown, Gem,
   X, ChevronRight, Info, Wallet, Clock, Layers, CheckCircle2,
-  AlertCircle,
+  AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { formatUGX } from '@/lib/vipData';
 import { getBondConfig } from '@/lib/investData';
@@ -13,6 +14,7 @@ import {
   purchaseBond, getActiveBonds, getTodaysBondIncome, getTotalInvested,
 } from '@/lib/bondStore';
 import { getWalletBalance } from '@/lib/depositStore';
+import { uploadWalletData } from '@/lib/supabase_ops';
 
 const LEVEL_ICONS = [TrendingUp, BarChart2, Landmark, Globe, Star, Gem, Crown];
 
@@ -40,6 +42,7 @@ export default function InvestPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState('products');
   const [selected, setSelected] = useState(null);
+  const [insufficientProduct, setInsufficientProduct] = useState(null);
   const [toast, setToast] = useState(null);
   const [stats, setStats] = useState({ balance: 0, activeBonds: [], todayIncome: 0, totalInvested: 0 });
 
@@ -67,6 +70,7 @@ export default function InvestPage() {
       setSelected(null);
       refresh();
       setTab('mybonds');
+      uploadWalletData(user.id); // sync bond deductions to Supabase
     }
     setTimeout(() => setToast(null), 3500);
   }
@@ -143,7 +147,7 @@ export default function InvestPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
-                className={`glass rounded-2xl border overflow-hidden ${canAfford ? 'border-border' : 'border-border opacity-70'}`}
+                className="glass rounded-2xl border border-border overflow-hidden"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-4">
@@ -154,11 +158,6 @@ export default function InvestPage() {
                         {product.badge && (
                           <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gradient-to-r ${product.color} text-white shrink-0`}>
                             {product.badge}
-                          </span>
-                        )}
-                        {!canAfford && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-500 shrink-0">
-                            Need more balance
                           </span>
                         )}
                       </div>
@@ -185,11 +184,14 @@ export default function InvestPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => { if (canAfford) { setSelected(product); playSound('click'); } }}
-                  disabled={!canAfford}
-                  className={`w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r ${product.color} text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed`}
+                  onClick={() => {
+                    playSound('click');
+                    if (canAfford) setSelected(product);
+                    else setInsufficientProduct(product);
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r ${product.color} text-white text-sm font-bold hover:opacity-90 transition-opacity`}
                 >
-                  {canAfford ? 'Buy Now' : `Need ${formatUGX(product.price - balance)} more`} <ChevronRight size={14} />
+                  Buy Now <ChevronRight size={14} />
                 </button>
               </motion.div>
             );
@@ -282,6 +284,82 @@ export default function InvestPage() {
         </motion.div>
       )}
 
+      {/* ── INSUFFICIENT FUNDS MODAL ── */}
+      <AnimatePresence>
+        {insufficientProduct && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 pb-24 sm:pb-4 bg-navy/70 backdrop-blur-sm"
+            onClick={() => setInsufficientProduct(null)}
+          >
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm glass rounded-2xl overflow-hidden"
+            >
+              <div className="bg-rose-600 px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <AlertCircle size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white text-base">Insufficient Funds</p>
+                    <p className="text-[11px] text-white/70">Top up your wallet to continue</p>
+                  </div>
+                </div>
+                <button onClick={() => setInsufficientProduct(null)} className="text-white/70 hover:text-white transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="bg-muted/40 rounded-xl p-4 space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Bond</span>
+                    <span className="font-bold">{insufficientProduct.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Required</span>
+                    <span className="font-bold text-rose-400">{formatUGX(insufficientProduct.price)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Your Balance</span>
+                    <span className="font-bold text-amber-400">{formatUGX(balance)}</span>
+                  </div>
+                  <div className="h-px bg-border" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Still Needed</span>
+                    <span className="font-bold text-rose-400">{formatUGX(insufficientProduct.price - balance)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setInsufficientProduct(null)}
+                    className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold hover:bg-muted/50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <Link to="/dashboard/deposit" className="flex-1">
+                    <button
+                      onClick={() => setInsufficientProduct(null)}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-lg hover:opacity-90 transition-opacity"
+                    >
+                      <RefreshCw size={14} /> Recharge Now
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── CONFIRM MODAL ── */}
       <AnimatePresence>
         {selected && (
@@ -349,7 +427,7 @@ export default function InvestPage() {
                     onClick={handleBuy}
                     className={`flex-1 py-3 rounded-xl bg-gradient-to-r ${selected.color} text-white text-sm font-bold shadow-lg hover:opacity-90 transition-opacity`}
                   >
-                    Confirm — Buy Now
+                    Buy Now
                   </button>
                 </div>
               </div>
