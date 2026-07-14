@@ -17,9 +17,9 @@ const SAMPLE_TX = {
   amount: 500000,
   currency: 'UGX',
   status: 'completed',
-  description: 'Deposit via MTN Mobile Money',
+  description: 'Deposit via Bank Gateway',
   reference: 'TB-DEP-20260713-0042',
-  method: 'MTN Mobile Money',
+  method: 'Bank Gateway',
   created_date: '2026-07-13T10:24:00Z',
   updated_date: '2026-07-13T10:26:32Z',
   breakdown: [

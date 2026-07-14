@@ -12,7 +12,7 @@ import { INVEST_PRODUCTS } from '@/lib/investData';
 import { formatUGX } from '@/lib/vipData';
 
 const STEPS = [
-  { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Put Money In', desc: 'Add as little as UGX 20,000 to your Bondify wallet using MTN or Airtel Mobile Money. Takes 2 minutes.' },
+  { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add as little as UGX 20,000 to your Bondify wallet through our secure payment gateway. Takes 2 minutes.' },
   { step: '2', icon: TrendingUp, color: 'bg-sky-500', title: 'Buy a Bond', desc: 'Choose a bond package that fits your budget. Your bond starts earning money for you every single day, automatically.' },
   { step: '3', icon: Gift, color: 'bg-amber-500', title: 'Collect Your Money', desc: 'Every morning, your daily earnings are added to your wallet. Withdraw whenever you want — straight to your phone.' },
 ];
@@ -303,7 +303,7 @@ export default function Landing() {
               Sign up free. Put in as little as UGX 20,000. Your money starts working for you tomorrow morning.
             </p>
             <div className="space-y-2">
-              {['Free to join — no monthly fees', 'UGX 10,000 welcome bonus on signup', 'Withdraw to MTN or Airtel anytime'].map((item) => (
+              {['Free to join — no monthly fees', 'UGX 10,000 welcome bonus on signup', 'Withdraw to your phone anytime'].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm">
                   <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
                   <span className="text-foreground/80">{item}</span>

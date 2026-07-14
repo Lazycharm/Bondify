@@ -13,7 +13,7 @@ const STEPS = [
     body: [
       'Before anything else, you need money in your wallet.',
       'The minimum to start is UGX 20,000.',
-      'Go to the Recharge page, enter the amount, then send it to our MTN or Airtel number shown to you.',
+      'Go to the Recharge page, enter the amount, then follow the payment instructions shown to you.',
       'As soon as the admin approves it (usually within a few minutes), your wallet gets credited — plus your UGX 10,000 welcome bonus is unlocked immediately.',
     ],
   },
@@ -46,7 +46,7 @@ const STEPS = [
     title: 'Step 4 — Withdraw When You\'re Ready',
     body: [
       'You can withdraw your balance at any time after 24 hours.',
-      'Go to the Withdrawals page, enter your mobile money number, and request a payout.',
+      'Go to the Withdrawals page, enter your phone number, and request a payout.',
       'Withdrawals are processed by the admin — usually within a few hours.',
       'But here\'s a tip: the longer you let your earnings grow, the more money you make. Think of it like a savings account that pays you daily.',
     ],
@@ -127,7 +127,7 @@ export default function LearnDaily() {
         {[
           { q: 'What if I lose my money?', a: 'Your bond investment is locked in for the duration. Daily earnings are credited every morning to your wallet balance.' },
           { q: 'Can I buy more than one bond?', a: 'Yes! You can buy as many bonds as your balance allows. Each bond earns independently.' },
-          { q: 'Is my money safe?', a: 'Your funds are tied to government treasury bonds. The platform processes payouts every day through mobile money.' },
+          { q: 'Is my money safe?', a: 'Your funds are tied to government treasury bonds. The platform processes payouts every day directly to your phone.' },
           { q: 'How fast do withdrawals happen?', a: 'Admin reviews and processes withdrawals. Most are done within the same day.' },
         ].map((faq, i) => (
           <div key={i} className="space-y-1">
