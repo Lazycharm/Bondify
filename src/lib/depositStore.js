@@ -4,6 +4,7 @@ const BONUS_GIVEN_KEY = 'bondify_bonus_given';
 const BONUS_WITHDRAWABLE_KEY = 'bondify_bonus_withdrawable';
 const WITHDRAWALS_KEY = 'bondify_withdrawals';
 const GIFT_KEY = 'bondify_gift_credits';
+const BOND_DEDUCTIONS_KEY = 'bondify_bond_deductions';
 
 export const FIRST_DEPOSIT_BONUS = 10000;
 
@@ -16,13 +17,14 @@ export function getUserDeposits(userId) {
   return getDeposits().filter((d) => d.userId === userId);
 }
 
-export function addDeposit({ userId, userEmail, amount, network, userPhone, userSms }) {
+export function addDeposit({ userId, userEmail, amount, network, userPhone, userSms, upgradeToSales }) {
   const deposits = getDeposits();
   const deposit = {
     id: `DEP-${Date.now()}`,
     userId, userEmail,
     amount: parseInt(amount, 10),
     network, userPhone, userSms,
+    upgradeToSales: upgradeToSales || false,
     status: 'pending',
     created_at: new Date().toISOString(),
   };
@@ -36,15 +38,25 @@ export function updateDeposit(id, status) {
   const idx = deposits.findIndex((d) => d.id === id);
   if (idx === -1) return null;
   deposits[idx] = { ...deposits[idx], status, updated_at: new Date().toISOString() };
-  if (status === 'approved' && !localStorage.getItem(BONUS_GIVEN_KEY)) {
-    localStorage.setItem(BONUS_GIVEN_KEY, '1');
-    localStorage.setItem(BONUS_KEY, String(FIRST_DEPOSIT_BONUS));
+
+  if (status === 'approved') {
+    // Grant welcome bonus on very first approved deposit
+    if (!localStorage.getItem(BONUS_GIVEN_KEY)) {
+      localStorage.setItem(BONUS_GIVEN_KEY, '1');
+      localStorage.setItem(BONUS_KEY, String(FIRST_DEPOSIT_BONUS));
+      // Bonus is immediately withdrawable after first deposit
+      localStorage.setItem(BONUS_WITHDRAWABLE_KEY, '1');
+    }
+    // If this is a sales upgrade deposit (>= 250k), mark eligible
+    if ((parseInt(deposits[idx].amount, 10) || 0) >= 250000) {
+      localStorage.setItem('bondify_sales_eligible', '1');
+    }
   }
+
   localStorage.setItem(KEY, JSON.stringify(deposits));
   return deposits[idx];
 }
 
-// Computed live from records — always accurate, no accumulator drift
 export function getWalletBalance() {
   const deposited = getDeposits()
     .filter((d) => d.status === 'approved')
@@ -60,12 +72,14 @@ export function getWalletBalance() {
       .reduce((s, w) => s + (parseInt(w.amount, 10) || 0), 0);
   } catch { /* */ }
 
-  return Math.max(0, deposited + gifts - withdrawn);
+  const bondDeductions = parseInt(localStorage.getItem(BOND_DEDUCTIONS_KEY) || '0', 10) || 0;
+
+  return Math.max(0, deposited + gifts - withdrawn - bondDeductions);
 }
 
 export function addGiftCredit(amount) {
   const toAdd = parseInt(amount, 10) || 0;
-  if (toAdd <= 0) return;
+  if (toAdd === 0) return;
   const current = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10) || 0;
   localStorage.setItem(GIFT_KEY, String(current + toAdd));
 }

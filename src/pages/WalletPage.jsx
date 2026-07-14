@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Wallet, Gift, Users, Clock, Download, Search,
-  ArrowUpRight, ArrowDownLeft, Plus, ChevronRight,
+  Wallet, Gift, Users, Clock, Search,
+  ArrowUpRight, ArrowDownLeft, Plus, ChevronRight, BarChart2,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
 import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
+import { getActiveBonds, getTotalInvested } from '@/lib/bondStore';
+import { calcReferralEarnings } from '@/lib/referralStore';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
 
@@ -30,6 +32,8 @@ export default function WalletPage() {
   const [bonusUnlocked, setBonusUnlocked] = useState(false);
   const [deposits, setDeposits] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [referralEarned, setReferralEarned] = useState(0);
+  const [totalInvested, setTotalInvested] = useState(0);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -39,6 +43,9 @@ export default function WalletPage() {
     if (user?.id) {
       setDeposits(getUserDeposits(user.id));
       setWithdrawals(getUserWithdrawals(user.id));
+      const e = calcReferralEarnings(user.id);
+      setReferralEarned(e.total);
+      setTotalInvested(getTotalInvested(user.id));
     }
   }, [user]);
 
@@ -53,9 +60,9 @@ export default function WalletPage() {
 
   const balanceCards = [
     { label: 'Main Balance', value: balance, icon: Wallet, color: 'from-emerald-500 to-teal-600' },
-    { label: 'Welcome Bonus', value: bonus, icon: Gift, color: 'from-amber-400 to-yellow-500', sub: bonusUnlocked ? 'Withdrawable' : 'Unlocks after Day 1 tasks' },
-    { label: 'Referral Earnings', value: 0, icon: Users, color: 'from-violet-400 to-purple-500' },
-    { label: 'Pending Deposits', value: deposits.filter((d) => d.status === 'pending').reduce((s, d) => s + d.amount, 0), icon: Clock, color: 'from-rose-400 to-red-500' },
+    { label: 'Welcome Bonus', value: bonus, icon: Gift, color: 'from-amber-400 to-yellow-500', sub: bonusUnlocked ? 'Withdrawable now!' : 'Recharge to unlock' },
+    { label: 'Referral Earnings', value: referralEarned, icon: Users, color: 'from-violet-400 to-purple-500' },
+    { label: 'Bonds Invested', value: totalInvested, icon: BarChart2, color: 'from-sky-400 to-blue-500' },
   ];
 
   return (
@@ -63,14 +70,14 @@ export default function WalletPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Wallet</h1>
-          <p className="text-muted-foreground text-sm">Manage your balances and transactions.</p>
+          <p className="text-muted-foreground text-sm">Your balances and transaction history.</p>
         </div>
         <Link to="/dashboard/deposit">
           <MagneticButton
             onClick={() => playSound('click')}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-emerald-500/20"
           >
-            <Plus size={16} /> Deposit Funds
+            <Plus size={16} /> Recharge
           </MagneticButton>
         </Link>
       </div>
@@ -85,35 +92,36 @@ export default function WalletPage() {
               </div>
               <p className="text-xs text-muted-foreground">{b.label}</p>
               <p className="text-xl font-bold mt-1">{formatUGX(b.value)}</p>
-              {b.sub && <p className={`text-[10px] mt-0.5 font-medium ${bonusUnlocked && b.sub === 'Withdrawable' ? 'text-emerald-500' : 'text-amber-500'}`}>{b.sub}</p>}
+              {b.sub && (
+                <p className={`text-[10px] mt-0.5 font-medium ${bonusUnlocked && b.sub.includes('Withdrawable') ? 'text-emerald-500' : 'text-amber-500'}`}>{b.sub}</p>
+              )}
             </GlassCard>
           </motion.div>
         ))}
       </div>
 
-      {/* Bonus rule */}
+      {/* Bonus info */}
       <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 text-sm flex items-start gap-3">
         <Gift className="text-amber-500 shrink-0 mt-0.5" size={18} />
         <p className="text-foreground/80">
           <span className="font-semibold text-amber-500">Welcome Bonus — UGX 10,000:</span>{' '}
           {bonusUnlocked
-            ? 'Your bonus is unlocked and ready to withdraw — nice work completing Day 1!'
-            : 'Your UGX 10,000 welcome bonus is credited on your first approved deposit. It unlocks for withdrawal once you complete all bond tasks on Day 1.'
-          }
+            ? 'Great — your bonus is unlocked and ready to withdraw! Go to Withdrawals to claim it.'
+            : 'Make your first recharge and your UGX 10,000 welcome bonus unlocks immediately — no waiting.'}
         </p>
       </div>
 
-      {/* Deposit CTA if balance is 0 */}
+      {/* Empty state */}
       {balance === 0 && deposits.length === 0 && (
         <GlassCard hover={false} className="text-center py-8">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-3">
             <Wallet size={24} className="text-emerald-500" />
           </div>
           <p className="font-semibold">No balance yet</p>
-          <p className="text-sm text-muted-foreground mt-1 mb-4">Deposit funds to start trading treasury bonds.</p>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">Recharge your wallet to start earning daily income from bonds.</p>
           <Link to="/dashboard/deposit">
             <button className="flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold">
-              Make First Deposit <ChevronRight size={16} />
+              Recharge Now <ChevronRight size={16} />
             </button>
           </Link>
         </GlassCard>
@@ -122,8 +130,8 @@ export default function WalletPage() {
       {/* Transaction history */}
       {allTx.length > 0 && (
         <GlassCard hover={false}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Transaction History</h3>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <h3 className="font-semibold">Recent Transactions</h3>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass text-sm">
               <Search size={14} className="text-muted-foreground" />
               <input
@@ -143,14 +151,16 @@ export default function WalletPage() {
                 transition={{ delay: i * 0.04 }}
                 className="flex items-center gap-3 py-2.5 border-b border-border last:border-0"
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${tx.txType === 'deposit' ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tx.txType === 'deposit' ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
                   {tx.txType === 'deposit'
                     ? <ArrowDownLeft size={16} className="text-emerald-500" />
                     : <ArrowUpRight size={16} className="text-rose-500" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium capitalize">{tx.txType} · {tx.network || tx.method}</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)} · ID: {tx.id}</p>
+                  <p className="text-sm font-medium capitalize">
+                    {tx.txType === 'deposit' ? 'Recharge' : 'Withdrawal'} · {tx.network || tx.method}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)} · {tx.id?.slice(0, 12)}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-sm font-semibold ${tx.txType === 'deposit' ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -160,6 +170,9 @@ export default function WalletPage() {
                 </div>
               </motion.div>
             ))}
+            {filtered.length === 0 && (
+              <p className="text-center py-6 text-sm text-muted-foreground">No transactions match your search.</p>
+            )}
           </div>
         </GlassCard>
       )}

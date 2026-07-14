@@ -8,6 +8,10 @@ const DEFAULTS = {
   telegram_token: '',
   telegram_chat_id: '',
   admin_emails: '',
+  support_telegram_link: '',
+  referral_lv1: '5',
+  referral_lv2: '2',
+  referral_lv3: '1',
 };
 
 export function getPaymentSettings() {
@@ -26,7 +30,6 @@ const OWNER_EMAIL = 'axismindclick@gmail.com';
 
 export function isAdmin(userEmail) {
   if (!userEmail) return false;
-  // Owner always has access regardless of settings
   if (userEmail.toLowerCase() === OWNER_EMAIL) return true;
   const { admin_emails } = getPaymentSettings();
   if (!admin_emails || !admin_emails.trim()) return false;

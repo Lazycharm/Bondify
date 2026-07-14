@@ -37,6 +37,9 @@ import TransactionDetails from '@/pages/TransactionDetails';
 import Withdrawals from '@/pages/Withdrawals';
 import Profile from '@/pages/Profile';
 import Calculator from '@/pages/Calculator';
+import LearnDaily from '@/pages/LearnDaily';
+import LearnSales from '@/pages/LearnSales';
+import Certificate from '@/pages/Certificate';
 
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -44,6 +47,8 @@ import AdminDeposits from '@/pages/admin/AdminDeposits';
 import AdminWithdrawals from '@/pages/admin/AdminWithdrawals';
 import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminSettings from '@/pages/admin/AdminSettings';
+import AdminBonds from '@/pages/admin/AdminBonds';
+import AdminReferrals from '@/pages/admin/AdminReferrals';
 
 function App() {
   return (
@@ -83,6 +88,9 @@ function App() {
                   <Route path="/dashboard/withdrawals" element={<Withdrawals />} />
                   <Route path="/dashboard/profile" element={<Profile />} />
                   <Route path="/dashboard/calculator" element={<Calculator />} />
+                  <Route path="/dashboard/learn/daily" element={<LearnDaily />} />
+                  <Route path="/dashboard/learn/sales" element={<LearnSales />} />
+                  <Route path="/dashboard/certificate" element={<Certificate />} />
                   <Route path="/transaction-details/:id" element={<TransactionDetails />} />
                 </Route>
               </Route>
@@ -94,6 +102,8 @@ function App() {
                   <Route path="/admin/deposits" element={<AdminDeposits />} />
                   <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
                   <Route path="/admin/users" element={<AdminUsers />} />
+                  <Route path="/admin/bonds" element={<AdminBonds />} />
+                  <Route path="/admin/referrals" element={<AdminReferrals />} />
                   <Route path="/admin/settings" element={<AdminSettings />} />
                 </Route>
               </Route>

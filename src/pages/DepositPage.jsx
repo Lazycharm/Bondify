@@ -26,8 +26,19 @@ export default function DepositPage() {
   return (
     <div className="max-w-lg mx-auto space-y-6 pb-10">
       <div>
-        <h1 className="text-2xl font-bold">Deposit Funds</h1>
-        <p className="text-sm text-muted-foreground mt-1">Select or enter the amount you want to deposit.</p>
+        <h1 className="text-2xl font-bold">Recharge Wallet</h1>
+        <p className="text-sm text-muted-foreground mt-1">Add funds to your wallet and start earning daily.</p>
+      </div>
+
+      {/* Min amount banner */}
+      <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+          <span className="text-lg">💳</span>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-emerald-400">Minimum Recharge: UGX 20,000</p>
+          <p className="text-xs text-muted-foreground">You can start earning daily from as little as UGX 20,000</p>
+        </div>
       </div>
 
       <GlassCard hover={false} className="space-y-5">

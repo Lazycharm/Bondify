@@ -148,6 +148,81 @@ export default function AdminSettings() {
         />
       </GlassCard>
 
+      {/* Support Telegram Link */}
+      <GlassCard hover={false} className="space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-9 h-9 rounded-xl bg-sky-400 flex items-center justify-center">
+            <Smartphone size={18} className="text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold">Support Link</h2>
+            <p className="text-xs text-muted-foreground">Where users land when they tap "Support" in the sidebar.</p>
+          </div>
+        </div>
+        <Field
+          label="Telegram Support Link"
+          id="support_telegram_link"
+          value={form.support_telegram_link || ''}
+          onChange={set('support_telegram_link')}
+          placeholder="https://t.me/yoursupportusername"
+          hint="Paste your Telegram channel or DM link. Users are sent here when they need help."
+        />
+      </GlassCard>
+
+      {/* Referral Rates */}
+      <GlassCard hover={false} className="space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
+            <Shield size={18} className="text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold">Referral Commission Rates</h2>
+            <p className="text-xs text-muted-foreground">Percentage of deposits paid to referrers at each level.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium block">Level 1 (%)</label>
+            <input
+              type="number"
+              value={form.referral_lv1 || '5'}
+              onChange={(e) => set('referral_lv1')(e.target.value)}
+              placeholder="5"
+              min="0"
+              max="100"
+              className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
+            <p className="text-[10px] text-muted-foreground">Direct referrals</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium block">Level 2 (%)</label>
+            <input
+              type="number"
+              value={form.referral_lv2 || '2'}
+              onChange={(e) => set('referral_lv2')(e.target.value)}
+              placeholder="2"
+              min="0"
+              max="100"
+              className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
+            <p className="text-[10px] text-muted-foreground">2nd level</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium block">Level 3 (%)</label>
+            <input
+              type="number"
+              value={form.referral_lv3 || '1'}
+              onChange={(e) => set('referral_lv3')(e.target.value)}
+              placeholder="1"
+              min="0"
+              max="100"
+              className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
+            <p className="text-[10px] text-muted-foreground">3rd level</p>
+          </div>
+        </div>
+      </GlassCard>
+
       {/* Save */}
       <button
         onClick={handleSave}
