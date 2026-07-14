@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import {
   Wallet, TrendingUp, Crown, CheckSquare, Users, Clock,
   Gift, Calendar, ArrowUpRight, Plus, Eye, EyeOff,
-  ChevronRight, Sparkles,
+  ChevronRight, Sparkles, BarChart2, Landmark, Globe, Star, Gem,
 } from 'lucide-react';
+import { INVEST_PRODUCTS } from '@/lib/investData';
 import GlassCard from '@/components/ui/GlassCard';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { CelebrationOverlay } from '@/components/ui/Celebration';
@@ -14,6 +15,8 @@ import { formatUGX, formatUGXShort, VIP_LEVELS, getBondsPerDay } from '@/lib/vip
 import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
 import { playSound } from '@/lib/sound';
+
+const LEVEL_ICONS = [TrendingUp, BarChart2, Landmark, Globe, Star, Gem, Crown];
 
 function getTaskState() {
   try {
@@ -175,6 +178,61 @@ export default function Dashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Bond Packages strip */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="font-bold text-base">Bond Packages</h2>
+            <p className="text-[11px] text-muted-foreground">Earn passive daily income — starting from UGX 25K</p>
+          </div>
+          <Link to="/dashboard/invest" onClick={() => playSound('click')} className="text-xs text-emerald-500 font-semibold hover:underline flex items-center gap-0.5 shrink-0">
+            See all <ChevronRight size={11} />
+          </Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory" style={{ scrollbarWidth: 'none' }}>
+          {INVEST_PRODUCTS.map((product) => {
+            const Icon = LEVEL_ICONS[product.level - 1] ?? TrendingUp;
+            return (
+              <div
+                key={product.id}
+                className="glass rounded-2xl border border-border overflow-hidden shrink-0 w-[168px] snap-start"
+              >
+                {/* Gradient header */}
+                <div className={`bg-gradient-to-br ${product.color} px-3 py-3 flex items-center gap-2.5`}>
+                  <div className="relative w-9 h-9 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+                    <div className="absolute inset-1 rounded-lg border border-white/10" />
+                    <Icon size={15} className="text-white relative z-10" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white font-bold text-[11px] leading-tight truncate">{product.name}</p>
+                    {product.badge && (
+                      <span className="text-[9px] text-white/75 font-medium">{product.badge}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="p-3 space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-muted-foreground">Price</span>
+                    <span className="text-[11px] font-bold">{formatUGX(product.price)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-muted-foreground">Daily</span>
+                    <span className="text-[11px] font-bold text-emerald-400">{formatUGX(product.daily_income)}</span>
+                  </div>
+                  <Link to="/dashboard/invest" onClick={() => playSound('click')}>
+                    <button className={`w-full mt-2 py-2 rounded-xl bg-gradient-to-r ${product.color} text-white text-[11px] font-bold hover:opacity-90 transition-opacity`}>
+                      Buy Now
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
 
       {/* #1 VIP Progress to Next Level */}
       {nextVip && (
