@@ -6,6 +6,7 @@ import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 import { isMuted, setMuted, playSound } from '@/lib/sound';
 import MagneticButton from '@/components/ui/MagneticButton';
+import ThemeLogo from '@/components/ThemeLogo';
 
 export default function Navbar() {
   const { theme, toggle } = useTheme();
@@ -29,11 +30,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 mt-3">
         <div className="glass rounded-2xl px-5 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center group">
-            <img
-              src="/logo.png"
-              alt="Bondify"
-              className="h-14 w-auto object-contain group-hover:scale-105 transition-transform"
-            />
+            <ThemeLogo className="h-9 w-auto object-contain group-hover:scale-105 transition-transform" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">

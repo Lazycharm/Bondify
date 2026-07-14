@@ -14,7 +14,7 @@ const STEPS = [
       'Before anything else, you need money in your wallet.',
       'The minimum to start is UGX 20,000.',
       'Go to the Recharge page, enter the amount, then follow the payment instructions shown to you.',
-      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited — plus your UGX 10,000 welcome bonus is unlocked immediately.',
+      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited plus your UGX 10,000 welcome bonus is unlocked immediately.',
     ],
   },
   {
@@ -25,8 +25,8 @@ const STEPS = [
       'Tap "Invest" at the bottom of the screen.',
       'You will see bond packages for different budgets.',
       'Each package shows you exactly how much you will earn every single day.',
-      'Tap "Invest Now" on the one you can afford. The price is taken from your wallet and your bond starts immediately.',
-      'You can buy more than one bond — the daily earnings add up!',
+      'Tap "Buy Now" on the one you can afford. The price is taken from your wallet and your bond starts immediately.',
+      'Your daily earnings add up Everyday',
     ],
   },
   {
@@ -35,7 +35,7 @@ const STEPS = [
     title: 'Step 3 — Earn Every Morning',
     body: [
       'Every morning when you open the Bondify app, your daily income is automatically added to your wallet.',
-      'You don\'t need to do anything — the bond works for you.',
+      'You don\'t need to do anything, the bond works for you.',
       'Your bond runs for a set number of days (30 to 360 depending on the package).',
       'The longer you hold without withdrawing, the more you earn total.',
     ],
@@ -47,7 +47,7 @@ const STEPS = [
     body: [
       'You can withdraw your balance at any time after 24 hours.',
       'Go to the Withdrawals page, enter your phone number, and request a payout.',
-      'Withdrawals are processed by the admin — usually within a few hours.',
+      'Withdrawals are processed by the admin usually within a few hours.',
       'But here\'s a tip: the longer you let your earnings grow, the more money you make. Think of it like a savings account that pays you daily.',
     ],
   },
@@ -56,10 +56,7 @@ const STEPS = [
     color: 'from-violet-400 to-purple-500',
     title: 'Step 5 — Invite Friends and Earn More',
     body: [
-      'For every friend who joins using your referral link and recharges, you earn a percentage of their deposit — straight to your wallet.',
-      'Level 1: 5% of what your direct referral deposits',
-      'Level 2: 2% of what their friends deposit',
-      'Level 3: 1% from the third layer of your network',
+      'For every friend who joins using your referral link and recharges, you earn a percentage of their deposit straight to your wallet.',
       'These rewards hit your wallet automatically. No waiting, no manual claims.',
     ],
   },
@@ -126,7 +123,7 @@ export default function LearnDaily() {
         <p className="font-semibold text-sm">Quick Answers</p>
         {[
           { q: 'What if I lose my money?', a: 'Your bond investment is locked in for the duration. Daily earnings are credited every morning to your wallet balance.' },
-          { q: 'Can I buy more than one bond?', a: 'Yes! You can buy as many bonds as your balance allows. Each bond earns independently.' },
+          { q: 'Can I buy more than one bond?', a: 'Yes for Sales Tasks! You can buy as many bonds as your balance allows. Each bond earns independently.' },
           { q: 'Is my money safe?', a: 'Your funds are tied to government treasury bonds. The platform processes payouts every day directly to your phone.' },
           { q: 'How fast do withdrawals happen?', a: 'Admin reviews and processes withdrawals. Most are done within the same day.' },
         ].map((faq, i) => (

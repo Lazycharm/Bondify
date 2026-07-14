@@ -16,6 +16,7 @@ import { getUserNotifications, getUnreadCount, markAllRead } from '@/lib/notific
 import { getTaskFlow } from '@/lib/taskFlowStore';
 import BottomNav from '@/components/BottomNav';
 import InstallPrompt from '@/components/ui/InstallPrompt';
+import ThemeLogo from '@/components/ThemeLogo';
 
 // Items always visible regardless of flow
 const CORE_NAV = [
@@ -104,7 +105,7 @@ export default function Layout() {
   const SidebarContent = (
     <div className="flex flex-col h-full">
       <Link to="/" className="flex items-center px-2 py-1 mb-6">
-        <img src="/logo.png" alt="Bondify" className="h-8 w-auto object-contain" />
+        <ThemeLogo className="h-8 w-auto object-contain" />
       </Link>
 
       <nav className="flex-1 space-y-1 overflow-y-auto">
@@ -238,7 +239,7 @@ export default function Layout() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative w-72 bg-card p-4 h-full overflow-y-auto"
+              className="relative w-72 bg-card p-4 h-full flex flex-col"
             >
               <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg glass">
                 <X size={16} />
@@ -256,7 +257,7 @@ export default function Layout() {
             <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 -ml-2">
               <Menu size={20} />
             </button>
-            <img src="/logo.png" alt="Bondify" className="lg:hidden h-7 w-auto object-contain" />
+            <ThemeLogo className="lg:hidden h-7 w-auto object-contain" />
           </div>
           <div className="flex items-center gap-2 lg:gap-3">
             <button onClick={toggleMute} className="p-2 rounded-xl glass text-foreground">

@@ -9,7 +9,7 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
 import { getWalletBalance, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import {
-  addWithdrawal, getUserWithdrawals, getWithdrawalLockStatus, calcFee, getWithdrawalFeePct,
+  addWithdrawal, getUserWithdrawals, getWithdrawalLockStatus, calcFee, getWithdrawalFeePct, getWithdrawalLimits,
 } from '@/lib/withdrawalStore';
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
@@ -55,6 +55,7 @@ export default function Withdrawals() {
   const [error, setError] = useState('');
   const [lockStatus, setLockStatus] = useState({ locked: false, reason: '', unlockAt: null });
   const [feePct, setFeePct] = useState(0);
+  const [limits, setLimits] = useState({ min: 10000, max: 0 });
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export default function Withdrawals() {
     if (user?.id) setHistory(getUserWithdrawals(user.id));
     setLockStatus(getWithdrawalLockStatus());
     setFeePct(getWithdrawalFeePct());
+    setLimits(getWithdrawalLimits());
   }, [user]);
 
   // Update countdown every minute
@@ -75,12 +77,12 @@ export default function Withdrawals() {
 
   const totalWithdrawable = balance + (bonusUnlocked ? bonus : 0);
   const parsedAmount = parseFloat(amount) || 0;
-  const MIN_WITHDRAWAL = 10000;
   const { fee, net } = calcFee(parsedAmount);
 
   async function submitWithdrawal(amt, bypassLock = false) {
     setError('');
-    if (amt < MIN_WITHDRAWAL) { setError(`Minimum withdrawal is ${formatUGX(MIN_WITHDRAWAL)}`); return false; }
+    if (amt < limits.min) { setError(`Minimum withdrawal is ${formatUGX(limits.min)}`); return false; }
+    if (limits.max > 0 && amt > limits.max) { setError(`Maximum withdrawal per request is ${formatUGX(limits.max)}`); return false; }
     if (amt > totalWithdrawable) { setError('Insufficient balance.'); return false; }
     if (!account.trim()) { setError('Please enter your account number.'); return false; }
 
@@ -164,7 +166,7 @@ export default function Withdrawals() {
         <GlassCard className="p-6">
           <h2 className="font-bold text-lg mb-1">Request Withdrawal</h2>
           <p className="text-xs text-muted-foreground mb-5">
-            Min: {formatUGX(MIN_WITHDRAWAL)}{feePct > 0 ? ` · ${feePct}% fee deducted` : ''} · Processed within 1–2 hours.
+            Min: {formatUGX(limits.min)}{limits.max > 0 ? ` · Max: ${formatUGX(limits.max)}` : ''}{feePct > 0 ? ` · ${feePct}% fee deducted` : ''} · Processed within 1–2 hours.
           </p>
 
           {submitted ? (
@@ -192,7 +194,7 @@ export default function Withdrawals() {
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Amount (UGX)</label>
                 <input
                   type="number"
-                  placeholder={`Min ${formatUGX(MIN_WITHDRAWAL)}`}
+                  placeholder={`Min ${formatUGX(limits.min)}`}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl bg-background/60 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -334,7 +336,7 @@ export default function Withdrawals() {
       <div className="flex items-start gap-2 p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
         <Info size={16} className="text-amber-500 shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
-          Minimum withdrawal: {formatUGX(MIN_WITHDRAWAL)}.
+          Minimum withdrawal: {formatUGX(limits.min)}.{limits.max > 0 ? ` Maximum per request: ${formatUGX(limits.max)}.` : ''}
           {feePct > 0 && ` A ${feePct}% fee is deducted from each withdrawal — you receive the net amount.`}
           {' '}Welcome bonus and referral rewards are exempt from lock periods.
         </p>

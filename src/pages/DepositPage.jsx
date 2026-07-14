@@ -5,6 +5,8 @@ import { CreditCard, ArrowRight, Info } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
+import { getPaymentSettings } from '@/lib/paymentSettings';
+import { getTaskFlow } from '@/lib/taskFlowStore';
 
 const PRESET_AMOUNTS = [20000, 50000, 120000, 250000, 500000, 1000000, 2500000, 5000000];
 
@@ -13,8 +15,13 @@ export default function DepositPage() {
   const [selected, setSelected] = useState(null);
   const [custom, setCustom] = useState('');
 
+  const flow = getTaskFlow();
+  const settings = getPaymentSettings();
+  const depositMin = parseInt(flow === 'sales' ? (settings.sales_deposit_min || '20000') : (settings.daily_deposit_min || '20000'), 10) || 20000;
+  const depositMax = parseInt(flow === 'sales' ? (settings.sales_deposit_max || '0') : (settings.daily_deposit_max || '0'), 10) || 0;
+
   const amount = custom ? parseInt(custom, 10) : selected;
-  const valid = amount && amount >= 20000;
+  const valid = amount && amount >= depositMin && (depositMax === 0 || amount <= depositMax);
 
   function handleConfirm() {
     if (!valid) return;
@@ -30,14 +37,16 @@ export default function DepositPage() {
         <p className="text-sm text-muted-foreground mt-1">Add funds to your wallet and start earning daily.</p>
       </div>
 
-      {/* Min amount banner */}
+      {/* Deposit limits banner */}
       <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
           <span className="text-lg">💳</span>
         </div>
         <div>
-          <p className="text-sm font-bold text-emerald-400">Minimum Recharge: UGX 20,000</p>
-          <p className="text-xs text-muted-foreground">You can start earning daily from as little as UGX 20,000</p>
+          <p className="text-sm font-bold text-emerald-400">Minimum Recharge: {formatUGX(depositMin)}</p>
+          <p className="text-xs text-muted-foreground">
+            {depositMax > 0 ? `Max per deposit: ${formatUGX(depositMax)} · ` : ''}You can start earning from as little as {formatUGX(depositMin)}
+          </p>
         </div>
       </div>
 
@@ -77,8 +86,11 @@ export default function DepositPage() {
               min={20000}
             />
           </div>
-          {amount && amount < 20000 && (
-            <p className="text-xs text-rose-500 mt-1">Minimum deposit is UGX 20,000</p>
+          {amount && amount < depositMin && (
+            <p className="text-xs text-rose-500 mt-1">Minimum deposit is {formatUGX(depositMin)}</p>
+          )}
+          {depositMax > 0 && amount && amount > depositMax && (
+            <p className="text-xs text-rose-500 mt-1">Maximum deposit is {formatUGX(depositMax)}</p>
           )}
         </div>
 
@@ -105,7 +117,7 @@ export default function DepositPage() {
           disabled={!valid}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/20"
         >
-          {valid ? `Confirm ${formatUGX(amount)}` : 'Select Amount to Continue'}
+          {valid ? `Confirm ${formatUGX(amount)}` : amount && amount < depositMin ? `Minimum is ${formatUGX(depositMin)}` : depositMax > 0 && amount && amount > depositMax ? `Maximum is ${formatUGX(depositMax)}` : 'Select Amount to Continue'}
           <ArrowRight size={18} />
         </button>
       </GlassCard>
@@ -114,7 +126,7 @@ export default function DepositPage() {
       <div className="space-y-2 text-xs text-muted-foreground">
         <div className="flex items-start gap-2">
           <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />
-          <p>The minimum recharge amount is UGX 20,000.</p>
+          <p>The minimum recharge amount is {formatUGX(depositMin)}{depositMax > 0 ? ` and maximum is ${formatUGX(depositMax)}` : ''}.</p>
         </div>
         <div className="flex items-start gap-2">
           <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />

@@ -119,7 +119,7 @@ export default function Certificate() {
                 Issued: {certDate}
               </p>
               <p className="text-white/30 text-[9px] uppercase tracking-wider">
-                Bondify — Uganda Treasury Bond Investment Platform
+                Bondify — Australia Treasury Bond Investment Platform
               </p>
             </div>
           </div>

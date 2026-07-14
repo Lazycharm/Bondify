@@ -12,6 +12,14 @@ export function getUserWithdrawals(userId) {
   return getWithdrawals().filter((w) => w.userId === userId);
 }
 
+export function getWithdrawalLimits() {
+  const s = getPaymentSettings();
+  return {
+    min: parseInt(s.withdrawal_min_amount || '10000', 10) || 10000,
+    max: parseInt(s.withdrawal_max_amount || '0', 10) || 0,
+  };
+}
+
 export function getWithdrawalFeePct() {
   const { withdrawal_fee_pct = '0' } = getPaymentSettings();
   return Math.max(0, Math.min(100, parseFloat(withdrawal_fee_pct) || 0));
@@ -73,6 +81,9 @@ export function addWithdrawal({ userId, userEmail, amount, method, account, bypa
 
   const balance = getWalletBalance();
   const amt = parseInt(amount, 10);
+  const { min, max } = getWithdrawalLimits();
+  if (min > 0 && amt < min) return { error: `Minimum withdrawal is UGX ${min.toLocaleString()}` };
+  if (max > 0 && amt > max) return { error: `Maximum withdrawal is UGX ${max.toLocaleString()}` };
   if (amt > balance) return { error: 'Insufficient balance' };
 
   const { fee, net } = calcFee(amt);

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
+import ThemeLogo from '@/components/ThemeLogo';
 
 const NAV = [
   { icon: LayoutDashboard, label: 'Overview', path: '/admin' },
@@ -28,7 +29,7 @@ export default function AdminLayout() {
   const Sidebar = (
     <div className="flex flex-col h-full">
       <div className="px-2 py-1 mb-8">
-        <img src="/logo.png" alt="Bondify" className="h-8 w-auto object-contain mb-2" />
+        <ThemeLogo className="h-8 w-auto object-contain mb-2" />
         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
       </div>
 

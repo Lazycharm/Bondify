@@ -13,8 +13,14 @@ const DEFAULTS = {
   referral_lv2: '2',
   referral_lv3: '1',
   withdrawal_fee_pct: '0',
+  withdrawal_min_amount: '10000',
+  withdrawal_max_amount: '0',
   daily_lock_hrs: '24',
   sales_lock_days: '30',
+  daily_deposit_min: '20000',
+  daily_deposit_max: '0',
+  sales_deposit_min: '20000',
+  sales_deposit_max: '0',
 };
 
 export function getPaymentSettings() {

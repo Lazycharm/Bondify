@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar';
 import ParticleBackground from '@/components/ParticleBackground';
 import GlassCard from '@/components/ui/GlassCard';
 import { getBondConfig } from '@/lib/investData';
+import ThemeLogo from '@/components/ThemeLogo';
 
 const STEPS = [
   { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add funds to your Bondify wallet through our secure payment gateway. Low minimum, takes just 2 minutes.' },
@@ -53,10 +54,6 @@ export default function Landing() {
         <ParticleBackground density={40} color="52, 211, 153" />
 
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          {/* Logo */}
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-6">
-            <img src="/logo.png" alt="Bondify" className="h-24 w-auto object-contain" />
-          </motion.div>
 
           {/* Live badge */}
           <motion.div

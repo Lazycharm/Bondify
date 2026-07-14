@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   Save, Send, CheckCircle2, Smartphone, Bot, Shield,
-  Camera, BarChart2, Percent, Clock, Users, CreditCard, Lock,
+  Camera, BarChart2, Percent, Clock, Users, CreditCard, Lock, Wallet,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { getPaymentSettings, savePaymentSettings } from '@/lib/paymentSettings';
@@ -123,6 +123,27 @@ export default function AdminConfig() {
           />
 
           <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Min Withdrawal (UGX)"
+              id="withdrawal_min_amount"
+              type="number"
+              value={form.withdrawal_min_amount || '10000'}
+              onChange={set('withdrawal_min_amount')}
+              placeholder="10000"
+              hint="Smallest allowed withdrawal. Defaults to 10,000."
+            />
+            <Field
+              label="Max Withdrawal (UGX)"
+              id="withdrawal_max_amount"
+              type="number"
+              value={form.withdrawal_max_amount || '0'}
+              onChange={set('withdrawal_max_amount')}
+              placeholder="0"
+              hint="Largest allowed per request. 0 = no limit."
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 mb-1">
                 <Clock size={13} className="text-emerald-500" />
@@ -151,6 +172,31 @@ export default function AdminConfig() {
               />
               <p className="text-xs text-muted-foreground">Days from sales activation before Sales members can withdraw. Part of the monthly contract commitment.</p>
             </div>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* ─── Deposit Limits ──────────────────────────────────── */}
+      <GlassCard hover={false} className="space-y-5">
+        <SectionHeader icon={Wallet} color="bg-emerald-500" title="Deposit Limits" subtitle="Min and max deposit per task type. 0 = no limit." />
+        <div className="space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Daily Tasks Members</p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Min Deposit (UGX)" id="daily_deposit_min" type="number"
+              value={form.daily_deposit_min || '20000'} onChange={set('daily_deposit_min')}
+              placeholder="20000" hint="Minimum deposit for Daily task flow." />
+            <Field label="Max Deposit (UGX)" id="daily_deposit_max" type="number"
+              value={form.daily_deposit_max || '0'} onChange={set('daily_deposit_max')}
+              placeholder="0" hint="0 = no maximum." />
+          </div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2 border-t border-border">Sales Tasks Members</p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Min Deposit (UGX)" id="sales_deposit_min" type="number"
+              value={form.sales_deposit_min || '20000'} onChange={set('sales_deposit_min')}
+              placeholder="20000" hint="Minimum deposit for Sales task flow." />
+            <Field label="Max Deposit (UGX)" id="sales_deposit_max" type="number"
+              value={form.sales_deposit_max || '0'} onChange={set('sales_deposit_max')}
+              placeholder="0" hint="0 = no maximum." />
           </div>
         </div>
       </GlassCard>

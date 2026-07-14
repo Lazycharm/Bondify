@@ -6,7 +6,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatUGX } from '@/lib/vipData';
-import { INVEST_PRODUCTS } from '@/lib/investData';
+import { getBondConfig } from '@/lib/investData';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
 import {
@@ -135,7 +135,7 @@ export default function InvestPage() {
       {/* ── PRODUCTS TAB ── */}
       {tab === 'products' && (
         <div className="space-y-4">
-          {INVEST_PRODUCTS.map((product, i) => {
+          {getBondConfig().map((product, i) => {
             const canAfford = balance >= product.price;
             return (
               <motion.div

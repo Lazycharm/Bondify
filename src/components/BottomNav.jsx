@@ -173,7 +173,7 @@ export default function BottomNav() {
               }`}
             >
               <BarChart2 size={20} />
-              <span className="text-[10px] font-medium">Invest</span>
+              <span className="text-[10px] font-medium">Buy</span>
             </Link>
           ) : (
             <button

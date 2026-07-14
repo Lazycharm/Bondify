@@ -206,33 +206,58 @@ function DailyDashboard({ user, displayName }) {
         </motion.div>
       )}
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: 'Wallet Balance', value: balance, numeric: true, icon: Wallet, color: 'from-emerald-500 to-teal-600', hide: true },
-          { label: "Today's Earnings", value: todayIncome, numeric: true, icon: TrendingUp, color: 'from-green-400 to-emerald-500' },
-          { label: 'Active Bonds', value: activeBonds.length, numeric: false, icon: BarChart2, color: 'from-sky-400 to-blue-500', suffix: ' bonds' },
-          { label: 'Total Invested', value: totalInvested, numeric: true, icon: Crown, color: 'from-amber-400 to-yellow-500' },
-        ].map((card, i) => (
-          <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <GlassCard glow hover className="h-full">
-              <div className="flex items-start justify-between mb-2">
-                <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center shadow-lg`}>
-                  <card.icon className="text-white" size={16} />
+      {/* Stats + Learn/Cert section */}
+      <div className="space-y-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: 'Wallet Balance', value: balance, numeric: true, icon: Wallet, color: 'from-emerald-500 to-teal-600', hide: true },
+            { label: "Today's Earnings", value: todayIncome, numeric: true, icon: TrendingUp, color: 'from-green-400 to-emerald-500' },
+            { label: 'Active Bonds', value: activeBonds.length, numeric: false, icon: BarChart2, color: 'from-sky-400 to-blue-500', suffix: ' bonds' },
+            { label: 'Total Invested', value: totalInvested, numeric: true, icon: Crown, color: 'from-amber-400 to-yellow-500' },
+          ].map((card, i) => (
+            <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <GlassCard glow hover className="h-full !p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${card.color} flex items-center justify-center shadow`}>
+                    <card.icon className="text-white" size={13} />
+                  </div>
+                  {card.hide && (
+                    <button onClick={() => setBalanceHidden((h) => !h)} className="text-muted-foreground">
+                      {balanceHidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                    </button>
+                  )}
                 </div>
-                {card.hide && (
-                  <button onClick={() => setBalanceHidden((h) => !h)} className="text-muted-foreground">
-                    {balanceHidden ? <Eye size={14} /> : <EyeOff size={14} />}
-                  </button>
-                )}
+                <p className="text-[10px] text-muted-foreground leading-none">{card.label}</p>
+                <p className="text-sm font-bold mt-1 leading-none">
+                  {card.hide && balanceHidden ? '••••••' : card.numeric ? formatUGX(card.value) : `${card.value}${card.suffix || ''}`}
+                </p>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* How It Works + Certificate — compact row */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+          className="grid grid-cols-2 gap-2">
+          <Link to="/dashboard/learn/daily" onClick={() => playSound('click')}>
+            <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
+              <BookOpen size={16} className="text-emerald-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold leading-none">How It Works</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Daily earning guide</p>
               </div>
-              <p className="text-[11px] text-muted-foreground">{card.label}</p>
-              <p className="text-lg font-bold mt-0.5">
-                {card.hide && balanceHidden ? '••••••' : card.numeric ? formatUGX(card.value) : `${card.value}${card.suffix || ''}`}
-              </p>
-            </GlassCard>
-          </motion.div>
-        ))}
+            </div>
+          </Link>
+          <Link to="/dashboard/certificate" onClick={() => playSound('click')}>
+            <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
+              <Award size={16} className="text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold leading-none">My Certificate</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Investor certificate</p>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
       </div>
 
       {/* Active bonds summary */}
@@ -403,25 +428,6 @@ function DailyDashboard({ user, displayName }) {
         </GlassCard>
       </motion.div>
 
-      {/* Learn + Certificate */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/dashboard/learn/daily" onClick={() => playSound('click')}>
-            <button className="w-full glass rounded-2xl py-4 flex flex-col items-center gap-2 hover:bg-muted/40 transition-colors">
-              <BookOpen size={22} className="text-emerald-400" />
-              <p className="text-xs font-semibold">How It Works</p>
-              <p className="text-[10px] text-muted-foreground text-center leading-tight">Learn the daily earning system</p>
-            </button>
-          </Link>
-          <Link to="/dashboard/certificate" onClick={() => playSound('click')}>
-            <button className="w-full glass rounded-2xl py-4 flex flex-col items-center gap-2 hover:bg-muted/40 transition-colors">
-              <Award size={22} className="text-amber-400" />
-              <p className="text-xs font-semibold">My Certificate</p>
-              <p className="text-[10px] text-muted-foreground text-center leading-tight">View your investor certificate</p>
-            </button>
-          </Link>
-        </div>
-      </motion.div>
     </div>
   );
 }
@@ -491,33 +497,58 @@ function SalesDashboard({ user, displayName }) {
         ))}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: 'Wallet Balance', value: balance, numeric: true, icon: Wallet, color: 'from-emerald-500 to-teal-600', hide: true },
-          { label: 'Tasks Today', value: `${tasksCompleted} / ${tasksTotal}`, numeric: false, icon: CheckSquare, color: 'from-violet-400 to-purple-500' },
-          { label: 'Current VIP', value: `${vip.level} · ${vip.name}`, numeric: false, icon: Crown, color: 'from-amber-400 to-yellow-500' },
-          { label: 'Pending Payout', value: pendingWithdrawal, numeric: true, icon: Clock, color: 'from-rose-400 to-red-500' },
-        ].map((card, i) => (
-          <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <GlassCard glow hover className="h-full">
-              <div className="flex items-start justify-between mb-2">
-                <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center shadow-lg`}>
-                  <card.icon className="text-white" size={16} />
+      {/* Stats + Learn/Cert section */}
+      <div className="space-y-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: 'Wallet Balance', value: balance, numeric: true, icon: Wallet, color: 'from-emerald-500 to-teal-600', hide: true },
+            { label: 'Tasks Today', value: `${tasksCompleted} / ${tasksTotal}`, numeric: false, icon: CheckSquare, color: 'from-violet-400 to-purple-500' },
+            { label: 'Current VIP', value: `${vip.level} · ${vip.name}`, numeric: false, icon: Crown, color: 'from-amber-400 to-yellow-500' },
+            { label: 'Pending Payout', value: pendingWithdrawal, numeric: true, icon: Clock, color: 'from-rose-400 to-red-500' },
+          ].map((card, i) => (
+            <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <GlassCard glow hover className="h-full !p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${card.color} flex items-center justify-center shadow`}>
+                    <card.icon className="text-white" size={13} />
+                  </div>
+                  {card.hide && (
+                    <button onClick={() => setBalanceHidden((h) => !h)} className="text-muted-foreground">
+                      {balanceHidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                    </button>
+                  )}
                 </div>
-                {card.hide && (
-                  <button onClick={() => setBalanceHidden((h) => !h)} className="text-muted-foreground">
-                    {balanceHidden ? <Eye size={14} /> : <EyeOff size={14} />}
-                  </button>
-                )}
+                <p className="text-[10px] text-muted-foreground leading-none">{card.label}</p>
+                <p className="text-sm font-bold mt-1 leading-none">
+                  {card.hide && balanceHidden ? '••••••' : card.numeric ? formatUGX(card.value) : card.value}
+                </p>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* How It Works + Certificate — compact row */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+          className="grid grid-cols-2 gap-2">
+          <Link to="/dashboard/learn/sales" onClick={() => playSound('click')}>
+            <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
+              <BookOpen size={16} className="text-violet-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold leading-none">How It Works</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Sales system guide</p>
               </div>
-              <p className="text-[11px] text-muted-foreground">{card.label}</p>
-              <p className="text-lg font-bold mt-0.5">
-                {card.hide && balanceHidden ? '••••••' : card.numeric ? formatUGX(card.value) : card.value}
-              </p>
-            </GlassCard>
-          </motion.div>
-        ))}
+            </div>
+          </Link>
+          <Link to="/dashboard/certificate" onClick={() => playSound('click')}>
+            <div className="glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/40 transition-colors">
+              <Award size={16} className="text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold leading-none">My Certificate</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">Investor certificate</p>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
       </div>
 
       {/* Task progress */}
@@ -592,25 +623,6 @@ function SalesDashboard({ user, displayName }) {
         </GlassCard>
       </motion.div>
 
-      {/* Learn + Certificate */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/dashboard/learn/sales" onClick={() => playSound('click')}>
-            <button className="w-full glass rounded-2xl py-4 flex flex-col items-center gap-2 hover:bg-muted/40 transition-colors">
-              <BookOpen size={22} className="text-violet-400" />
-              <p className="text-xs font-semibold">How It Works</p>
-              <p className="text-[10px] text-muted-foreground text-center leading-tight">Learn the sales system</p>
-            </button>
-          </Link>
-          <Link to="/dashboard/certificate" onClick={() => playSound('click')}>
-            <button className="w-full glass rounded-2xl py-4 flex flex-col items-center gap-2 hover:bg-muted/40 transition-colors">
-              <Award size={22} className="text-amber-400" />
-              <p className="text-xs font-semibold">My Certificate</p>
-              <p className="text-[10px] text-muted-foreground text-center leading-tight">View your investor certificate</p>
-            </button>
-          </Link>
-        </div>
-      </motion.div>
     </div>
   );
 }
