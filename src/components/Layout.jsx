@@ -13,6 +13,7 @@ import { isMuted, setMuted, playSound } from '@/lib/sound';
 import { isAdmin } from '@/lib/paymentSettings';
 import { getUserNotifications, getUnreadCount, markAllRead } from '@/lib/notificationStore';
 import BottomNav from '@/components/BottomNav';
+import InstallPrompt from '@/components/ui/InstallPrompt';
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -278,6 +279,9 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Install prompt — slides up from bottom, dismissible per session */}
+      <InstallPrompt />
 
       {/* Bottom navigation — fixed (mobile only) */}
       <BottomNav />
