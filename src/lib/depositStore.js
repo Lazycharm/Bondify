@@ -48,24 +48,26 @@ export function updateDeposit(id, status) {
 export function getWalletBalance() {
   const deposited = getDeposits()
     .filter((d) => d.status === 'approved')
-    .reduce((s, d) => s + parseInt(d.amount, 10), 0);
+    .reduce((s, d) => s + (parseInt(d.amount, 10) || 0), 0);
 
-  const gifts = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10);
+  const gifts = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10) || 0;
 
   let withdrawn = 0;
   try {
     const wds = JSON.parse(localStorage.getItem(WITHDRAWALS_KEY) || '[]');
     withdrawn = wds
       .filter((w) => w.status !== 'rejected')
-      .reduce((s, w) => s + parseInt(w.amount, 10), 0);
+      .reduce((s, w) => s + (parseInt(w.amount, 10) || 0), 0);
   } catch { /* */ }
 
   return Math.max(0, deposited + gifts - withdrawn);
 }
 
 export function addGiftCredit(amount) {
-  const current = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10);
-  localStorage.setItem(GIFT_KEY, String(current + parseInt(amount, 10)));
+  const toAdd = parseInt(amount, 10) || 0;
+  if (toAdd <= 0) return;
+  const current = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10) || 0;
+  localStorage.setItem(GIFT_KEY, String(current + toAdd));
 }
 
 export function getBonusBalance() {
