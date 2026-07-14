@@ -86,7 +86,7 @@ nav.fixed.bottom-0 { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 @layer components {
   .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-white/10;
+    @apply bg-card/60 backdrop-blur-xl border border-border/40;
     box-shadow: 0 8px 32px rgba(2, 6, 23, 0.08);
   }
   .dark .glass {
@@ -95,7 +95,11 @@ nav.fixed.bottom-0 { padding-bottom: env(safe-area-inset-bottom, 0px); }
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
   .glass-strong {
-    @apply bg-card/80 backdrop-blur-2xl border border-white/15;
+    @apply bg-card/80 backdrop-blur-2xl border border-border/50;
+  }
+  .dark .glass-strong {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.15);
   }
   .text-gradient-emerald {
     @apply bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent;

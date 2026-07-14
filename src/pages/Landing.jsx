@@ -31,8 +31,8 @@ export default function Landing() {
     <div className="min-h-screen overflow-x-hidden bg-background">
       <Navbar />
 
-      {/* HERO */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      {/* HERO — always dark regardless of theme */}
+      <section className="dark relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         {/* Video background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <iframe
@@ -50,7 +50,7 @@ export default function Landing() {
         </div>
         {/* Strong flat overlay so text is always readable over any video frame */}
         <div className="absolute inset-0 bg-[#0a1628]/85" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-background/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#0a1628]/95" />
         <ParticleBackground density={40} color="52, 211, 153" />
 
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
