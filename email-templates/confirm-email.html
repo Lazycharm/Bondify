@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirm your email — Bondify</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0f1e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  <!-- Wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0f1e;min-height:100vh;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <!-- Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background-color:#111827;border-radius:20px;border:1px solid #1f2d45;overflow:hidden;">
+
+          <!-- Top accent bar -->
+          <tr>
+            <td style="height:4px;background:linear-gradient(90deg,#10b981,#0d9488);font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding:36px 40px 24px;">
+
+              <!-- Logo mark -->
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="width:52px;height:52px;background:linear-gradient(135deg,#10b981,#0d9488);border-radius:14px;vertical-align:middle;">
+                    <span style="font-size:26px;font-weight:900;color:#ffffff;line-height:52px;display:block;text-align:center;">B</span>
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <span style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Bondify</span>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 40px;">
+              <div style="height:1px;background-color:#1f2d45;font-size:0;line-height:0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 40px 32px;">
+
+              <!-- Icon -->
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 28px;">
+                <tr>
+                  <td align="center" style="width:64px;height:64px;background-color:#0d2b22;border-radius:50%;border:2px solid #10b981;vertical-align:middle;">
+                    <span style="font-size:28px;line-height:64px;display:block;text-align:center;">✉️</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Heading -->
+              <h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#ffffff;text-align:center;line-height:1.3;">
+                Confirm your email address
+              </h1>
+
+              <!-- Subtext -->
+              <p style="margin:0 0 32px;font-size:15px;color:#94a3b8;text-align:center;line-height:1.7;">
+                You're one step away from joining the Bondify network. Click the button below to verify your email and start selling Australian government bonds.
+              </p>
+
+              <!-- CTA Button -->
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td align="center" style="background:linear-gradient(135deg,#10b981,#0d9488);border-radius:12px;">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="display:inline-block;padding:15px 40px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.3px;">
+                      Confirm Email Address →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback link -->
+              <p style="margin:28px 0 0;font-size:12px;color:#64748b;text-align:center;line-height:1.6;">
+                Button not working? Copy and paste this link into your browser:<br />
+                <a href="{{ .ConfirmationURL }}" style="color:#10b981;text-decoration:none;word-break:break-all;">
+                  {{ .ConfirmationURL }}
+                </a>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 40px;">
+              <div style="height:1px;background-color:#1f2d45;font-size:0;line-height:0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- Trust badges -->
+          <tr>
+            <td style="padding:24px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" width="33%" style="padding:0 4px;">
+                    <p style="margin:0;font-size:11px;color:#64748b;text-align:center;line-height:1.5;">
+                      🔒<br />
+                      <span style="color:#94a3b8;">Secure &amp; Encrypted</span>
+                    </p>
+                  </td>
+                  <td align="center" width="33%" style="padding:0 4px;border-left:1px solid #1f2d45;border-right:1px solid #1f2d45;">
+                    <p style="margin:0;font-size:11px;color:#64748b;text-align:center;line-height:1.5;">
+                      🇦🇺<br />
+                      <span style="color:#94a3b8;">Australian Bonds</span>
+                    </p>
+                  </td>
+                  <td align="center" width="33%" style="padding:0 4px;">
+                    <p style="margin:0;font-size:11px;color:#64748b;text-align:center;line-height:1.5;">
+                      ⚡<br />
+                      <span style="color:#94a3b8;">Instant Withdrawals</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px 32px;">
+              <p style="margin:0;font-size:11px;color:#475569;text-align:center;line-height:1.7;">
+                This link expires in 24 hours. If you didn't create a Bondify account, you can safely ignore this email.<br />
+                &copy; 2026 Bondify · Authorised Australian Bond Reseller Network
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

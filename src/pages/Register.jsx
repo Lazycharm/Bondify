@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/api/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { sendTelegram } from "@/lib/telegramNotify";
@@ -16,8 +16,8 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ref = new URLSearchParams(location.search).get('ref');
@@ -36,7 +36,6 @@ export default function Register() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin + '/dashboard' },
       });
       if (error) throw error;
       // Store referral if someone referred this user
@@ -46,7 +45,7 @@ export default function Register() {
         clearRefCode();
       }
       sendTelegram(`🆕 <b>New User Registered</b>\n\nEmail: ${email}\nReferred by: ${refCode || 'direct'}\nTime: ${new Date().toLocaleString()}`);
-      setEmailSent(true);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
@@ -60,38 +59,6 @@ export default function Register() {
       options: { redirectTo: window.location.origin + '/dashboard' },
     });
   };
-
-  if (emailSent) {
-    return (
-      <AuthLayout
-        icon={Mail}
-        title="Check your email"
-        subtitle={`We sent a verification link to ${email}`}
-      >
-        <div className="flex flex-col items-center text-center gap-4 py-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-          </div>
-          <div className="space-y-1">
-            <p className="font-semibold text-foreground">{email}</p>
-            <p className="text-sm text-muted-foreground">
-              Click the link in your email to activate your account and get started.
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground pt-2">
-            No email? Check your spam folder or{" "}
-            <button
-              onClick={() => setEmailSent(false)}
-              className="text-primary font-medium hover:underline"
-            >
-              try again
-            </button>
-            .
-          </p>
-        </div>
-      </AuthLayout>
-    );
-  }
 
   return (
     <AuthLayout
