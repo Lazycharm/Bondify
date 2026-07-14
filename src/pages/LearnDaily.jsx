@@ -12,9 +12,9 @@ const STEPS = [
     title: 'Step 1 — Recharge Your Wallet',
     body: [
       'Before anything else, you need money in your wallet.',
-      'The minimum to start is UGX 20,000.',
+      'The minimum to start is low — you can begin with a small amount.',
       'Go to the Recharge page, enter the amount, then follow the payment instructions shown to you.',
-      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited — plus your UGX 10,000 welcome bonus is unlocked immediately.',
+      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited — plus your welcome bonus is unlocked immediately.',
     ],
   },
   {

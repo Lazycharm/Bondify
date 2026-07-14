@@ -7,7 +7,7 @@ import { playSound } from '@/lib/sound';
 
 const FAQ = [
   { q: 'When are withdrawals processed?', a: 'Withdrawals are processed on weekends only (Saturday & Sunday) per platform policy.' },
-  { q: 'How do I unlock my registration bonus?', a: 'Your UGX 10,000 bonus becomes withdrawable after depositing at least UGX 20,000 and meeting all platform terms.' },
+  { q: 'How do I unlock my registration bonus?', a: 'Your welcome bonus becomes withdrawable after making your first recharge and meeting all platform terms.' },
   { q: 'How do I recharge my wallet?', a: 'Go to the Recharge page, select an amount, and follow the secure payment instructions provided.' },
   { q: 'How do VIP levels work?', a: 'There are 10 VIP levels. Higher levels unlock more daily tasks and higher earnings.' },
 ];

@@ -9,10 +9,9 @@ import Navbar from '@/components/Navbar';
 import ParticleBackground from '@/components/ParticleBackground';
 import GlassCard from '@/components/ui/GlassCard';
 import { INVEST_PRODUCTS } from '@/lib/investData';
-import { formatUGX } from '@/lib/vipData';
 
 const STEPS = [
-  { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add as little as UGX 20,000 to your Bondify wallet through our secure payment gateway. Takes 2 minutes.' },
+  { step: '1', icon: Wallet, color: 'bg-emerald-500', title: 'Recharge Your Wallet', desc: 'Add funds to your Bondify wallet through our secure payment gateway. Low minimum, takes just 2 minutes.' },
   { step: '2', icon: TrendingUp, color: 'bg-sky-500', title: 'Buy a Bond', desc: 'Choose a bond package that fits your budget. Your bond starts earning money for you every single day, automatically.' },
   { step: '3', icon: Gift, color: 'bg-amber-500', title: 'Collect Your Money', desc: 'Every morning, your daily earnings are added to your wallet. Withdraw whenever you want — straight to your phone.' },
 ];
@@ -20,8 +19,8 @@ const STEPS = [
 const TRUST = [
   { icon: Shield, label: 'Safe & Secure', desc: 'Your money is protected and tracked in real-time' },
   { icon: Smartphone, label: 'Works on Any Phone', desc: 'No laptop needed — runs perfectly on mobile' },
-  { icon: Users, label: 'Community', desc: 'Thousands of Ugandans already earning daily' },
-  { icon: Star, label: 'Welcome Bonus', desc: 'Get UGX 10,000 free when you join today' },
+  { icon: Users, label: 'Global Community', desc: 'Members worldwide already earning daily' },
+  { icon: Star, label: 'Welcome Bonus', desc: 'Get a free bonus just for joining today' },
 ];
 
 export default function Landing() {
@@ -56,7 +55,7 @@ export default function Landing() {
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
           {/* Logo */}
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-6">
-            <img src="/logo.png" alt="Bondify" className="h-14 w-auto object-contain" />
+            <img src="/logo.png" alt="Bondify" className="h-24 w-auto object-contain" />
           </motion.div>
 
           {/* Live badge */}
@@ -89,7 +88,7 @@ export default function Landing() {
             className="mt-5 text-lg sm:text-xl text-white/75 max-w-xl mx-auto leading-relaxed"
           >
             Bondify lets you earn daily income from government bonds.
-            Start with UGX 20,000 and watch your money grow — no experience needed.
+            Start with a small amount and watch your money grow — no experience needed.
           </motion.p>
 
           {/* Bonus highlight */}
@@ -100,7 +99,7 @@ export default function Landing() {
             className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-500/20 border border-amber-400/30"
           >
             <Gift size={18} className="text-amber-400" />
-            <span className="text-amber-300 font-semibold text-sm">Join today — get UGX 10,000 free bonus</span>
+            <span className="text-amber-300 font-semibold text-sm">Join today — get a free welcome bonus</span>
           </motion.div>
 
           {/* CTAs */}
@@ -141,8 +140,8 @@ export default function Landing() {
           >
             {[
               { value: '48,250+', label: 'Active Members' },
-              { value: 'UGX 18.5M+', label: "Paid Out Today" },
-              { value: 'UGX 20K', label: 'Minimum to Start' },
+              { value: '$18.5M+', label: "Paid Out" },
+              { value: 'Low Min.', label: 'To Start' },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl font-black text-white">{s.value}</p>
@@ -235,12 +234,12 @@ export default function Landing() {
                   </div>
                   <div className="p-3 space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground">Cost</span>
-                      <span className="text-[11px] font-bold">{formatUGX(product.price)}</span>
+                      <span className="text-[10px] text-muted-foreground">Daily return</span>
+                      <span className="text-[11px] font-bold text-emerald-400">{((product.daily_income / product.price) * 100).toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground">Daily earn</span>
-                      <span className="text-[11px] font-bold text-emerald-400">{formatUGX(product.daily_income)}</span>
+                      <span className="text-[10px] text-muted-foreground">Duration</span>
+                      <span className="text-[11px] font-bold">{product.duration}d</span>
                     </div>
                   </div>
                 </div>
@@ -300,10 +299,10 @@ export default function Landing() {
             <div className="text-5xl mb-4">💰</div>
             <h2 className="text-2xl font-black mb-2">Ready to Start Earning?</h2>
             <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-              Sign up free. Put in as little as UGX 20,000. Your money starts working for you tomorrow morning.
+              Sign up free. Add funds with a low minimum. Your money starts working for you tomorrow morning.
             </p>
             <div className="space-y-2">
-              {['Free to join — no monthly fees', 'UGX 10,000 welcome bonus on signup', 'Withdraw to your phone anytime'].map((item) => (
+              {['Free to join — no monthly fees', 'Free welcome bonus on signup', 'Withdraw to your phone anytime'].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm">
                   <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
                   <span className="text-foreground/80">{item}</span>
