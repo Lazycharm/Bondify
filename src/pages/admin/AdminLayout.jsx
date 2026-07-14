@@ -26,14 +26,9 @@ export default function AdminLayout() {
 
   const Sidebar = (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-2 py-1 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
-          <Shield size={18} className="text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-sm leading-tight">Bondify Admin</p>
-          <p className="text-xs text-muted-foreground truncate max-w-[130px]">{user?.email}</p>
-        </div>
+      <div className="px-2 py-1 mb-8">
+        <img src="/logo.png" alt="Bondify" className="h-8 w-auto object-contain mb-2" />
+        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
       </div>
 
       <nav className="flex-1 space-y-1">

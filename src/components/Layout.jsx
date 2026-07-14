@@ -103,9 +103,8 @@ export default function Layout() {
 
   const SidebarContent = (
     <div className="flex flex-col h-full">
-      <Link to="/" className="flex items-center gap-2 px-2 py-1 mb-6">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-500/30">B</div>
-        <span className="font-bold tracking-tight">Bondi<span className="text-emerald-500">fy</span></span>
+      <Link to="/" className="flex items-center px-2 py-1 mb-6">
+        <img src="/logo.png" alt="Bondify" className="h-8 w-auto object-contain" />
       </Link>
 
       <nav className="flex-1 space-y-1 overflow-y-auto">
@@ -257,7 +256,7 @@ export default function Layout() {
             <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 -ml-2">
               <Menu size={20} />
             </button>
-            <span className="lg:hidden font-bold">Bondify</span>
+            <img src="/logo.png" alt="Bondify" className="lg:hidden h-7 w-auto object-contain" />
           </div>
           <div className="flex items-center gap-2 lg:gap-3">
             <button onClick={toggleMute} className="p-2 rounded-xl glass text-foreground">

@@ -48,11 +48,17 @@ export default function Landing() {
             }}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-navy/92 via-emerald-950/88 to-navy/92" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        {/* Strong flat overlay so text is always readable over any video frame */}
+        <div className="absolute inset-0 bg-[#0a1628]/85" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-background/95" />
         <ParticleBackground density={40} color="52, 211, 153" />
 
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          {/* Logo */}
+          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-6">
+            <img src="/logo.png" alt="Bondify" className="h-14 w-auto object-contain" />
+          </motion.div>
+
           {/* Live badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
