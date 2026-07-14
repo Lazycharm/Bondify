@@ -32,6 +32,7 @@ import Referrals from '@/pages/Referrals';
 import Achievements from '@/pages/Achievements';
 import Support from '@/pages/Support';
 import Marketplace from '@/pages/Marketplace';
+import InvestPage from '@/pages/InvestPage';
 import TransactionDetails from '@/pages/TransactionDetails';
 import Withdrawals from '@/pages/Withdrawals';
 import Profile from '@/pages/Profile';
@@ -78,6 +79,7 @@ function App() {
                   <Route path="/dashboard/achievements" element={<Achievements />} />
                   <Route path="/dashboard/support" element={<Support />} />
                   <Route path="/dashboard/marketplace" element={<Marketplace />} />
+                  <Route path="/dashboard/invest" element={<InvestPage />} />
                   <Route path="/dashboard/withdrawals" element={<Withdrawals />} />
                   <Route path="/dashboard/profile" element={<Profile />} />
                   <Route path="/dashboard/calculator" element={<Calculator />} />

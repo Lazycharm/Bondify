@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Wallet, CheckSquare, TrendingUp, Store } from 'lucide-react';
+import { LayoutDashboard, Wallet, CheckSquare, TrendingUp, BarChart2 } from 'lucide-react';
 import { playSound } from '@/lib/sound';
 
 const SIDE_ITEMS = [
@@ -9,7 +9,7 @@ const SIDE_ITEMS = [
 ];
 
 const SIDE_ITEMS_RIGHT = [
-  { icon: Store, label: 'Market', path: '/dashboard/marketplace' },
+  { icon: BarChart2, label: 'Invest', path: '/dashboard/invest' },
   { icon: TrendingUp, label: 'Portfolio', path: '/dashboard/portfolio' },
 ];
 

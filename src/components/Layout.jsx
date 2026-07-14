@@ -17,6 +17,7 @@ import InstallPrompt from '@/components/ui/InstallPrompt';
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: TrendingUp, label: 'Bond Invest', path: '/dashboard/invest' },
   { icon: Store, label: 'Marketplace', path: '/dashboard/marketplace' },
   { icon: Wallet, label: 'Wallet', path: '/dashboard/wallet' },
   { icon: ArrowUpRight, label: 'Withdrawals', path: '/dashboard/withdrawals' },
