@@ -50,7 +50,7 @@ export default function Withdrawals() {
   const totalWithdrawable = balance + (bonusUnlocked ? bonus : 0);
 
   const parsedAmount = parseFloat(amount) || 0;
-  const MIN_WITHDRAWAL = 20000;
+  const MIN_WITHDRAWAL = 10000;
   const availableBalance = totalWithdrawable;
 
   async function handleSubmit(e) {
