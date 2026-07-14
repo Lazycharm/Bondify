@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Download, Upload, Settings, Users,
-  Menu, X, LogOut, ChevronRight, Shield, BarChart2, Share2,
+  Menu, X, LogOut, ChevronRight, Shield, BarChart2, Share2, SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
@@ -15,6 +15,7 @@ const NAV = [
   { icon: Users, label: 'Users', path: '/admin/users' },
   { icon: BarChart2, label: 'Bonds', path: '/admin/bonds' },
   { icon: Share2, label: 'Referrals', path: '/admin/referrals' },
+  { icon: SlidersHorizontal, label: 'Config', path: '/admin/config' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 

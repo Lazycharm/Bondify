@@ -12,6 +12,9 @@ const DEFAULTS = {
   referral_lv1: '5',
   referral_lv2: '2',
   referral_lv3: '1',
+  withdrawal_fee_pct: '0',
+  daily_lock_hrs: '24',
+  sales_lock_days: '30',
 };
 
 export function getPaymentSettings() {

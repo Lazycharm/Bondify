@@ -27,4 +27,7 @@ export function checkAndSetSalesEligibility(approvedDeposits) {
 export function activateSalesFlow() {
   localStorage.setItem(FLOW_KEY, 'sales');
   localStorage.setItem(ELIGIBLE_KEY, '1');
+  if (!localStorage.getItem('bondify_sales_activated_at')) {
+    localStorage.setItem('bondify_sales_activated_at', new Date().toISOString());
+  }
 }

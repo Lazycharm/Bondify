@@ -49,6 +49,7 @@ import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminBonds from '@/pages/admin/AdminBonds';
 import AdminReferrals from '@/pages/admin/AdminReferrals';
+import AdminConfig from '@/pages/admin/AdminConfig';
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
                   <Route path="/admin/bonds" element={<AdminBonds />} />
                   <Route path="/admin/referrals" element={<AdminReferrals />} />
                   <Route path="/admin/settings" element={<AdminSettings />} />
+                  <Route path="/admin/config" element={<AdminConfig />} />
                 </Route>
               </Route>
 

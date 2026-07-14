@@ -189,7 +189,7 @@ export default function InvestPage() {
                   disabled={!canAfford}
                   className={`w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r ${product.color} text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
-                  {canAfford ? 'Invest Now' : `Need ${formatUGX(product.price - balance)} more`} <ChevronRight size={14} />
+                  {canAfford ? 'Buy Now' : `Need ${formatUGX(product.price - balance)} more`} <ChevronRight size={14} />
                 </button>
               </motion.div>
             );
@@ -349,7 +349,7 @@ export default function InvestPage() {
                     onClick={handleBuy}
                     className={`flex-1 py-3 rounded-xl bg-gradient-to-r ${selected.color} text-white text-sm font-bold shadow-lg hover:opacity-90 transition-opacity`}
                   >
-                    Confirm — Invest Now
+                    Confirm — Buy Now
                   </button>
                 </div>
               </div>
