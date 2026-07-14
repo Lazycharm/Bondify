@@ -322,7 +322,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border text-center">
         <p className="text-sm text-muted-foreground">
-          © 2025 Bondify. Earn daily from government bond distribution.
+          © 2026 Bondify. Earn daily from government bond distribution.
         </p>
       </footer>
     </div>
