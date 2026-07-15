@@ -14,7 +14,7 @@ import {
 import { formatUGX } from '@/lib/vipData';
 import { sendTelegram } from '@/lib/telegramNotify';
 import { playSound } from '@/lib/sound';
-import { saveWithdrawalToSupabase, syncUserWithdrawals } from '@/lib/supabase_ops';
+import { saveWithdrawalToSupabase, syncUserWithdrawals, loadPlatformConfigFromSupabase } from '@/lib/supabase_ops';
 
 const PAYMENT_METHODS = [
   { id: 'mtn', name: 'MTN Mobile Money', color: 'from-yellow-400 to-amber-500' },
@@ -58,6 +58,7 @@ export default function Withdrawals() {
   const [feePct, setFeePct] = useState(0);
   const [limits, setLimits] = useState({ min: 10000, max: 0 });
   const [_tick, setTick] = useState(0);
+  const [tgCreds, setTgCreds] = useState({ token: '', chatId: '' });
 
   useEffect(() => {
     setBalance(getWalletBalance());
@@ -74,6 +75,9 @@ export default function Withdrawals() {
         setBalance(getWalletBalance());
       });
     }
+    loadPlatformConfigFromSupabase().then((s) => {
+      if (s) setTgCreds({ token: s.telegram_token, chatId: s.telegram_chat_id });
+    });
   }, [user]);
 
   // Update countdown every minute
@@ -83,7 +87,8 @@ export default function Withdrawals() {
     return () => clearInterval(id);
   }, [lockStatus.locked]);
 
-  const totalWithdrawable = balance + (bonusUnlocked ? bonus : 0);
+  // bonus is already included in getWalletBalance() — no double-add here
+  const totalWithdrawable = balance;
   const parsedAmount = parseFloat(amount) || 0;
   const { fee, net } = calcFee(parsedAmount);
 
@@ -112,7 +117,8 @@ export default function Withdrawals() {
     }
 
     sendTelegram(
-      `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${feePct > 0 ? `\nFee (${feePct}%): ${formatUGX(Math.round(amt * feePct / 100))}\nNet payout: ${formatUGX(amt - Math.round(amt * feePct / 100))}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${saved?.id ?? 'N/A'}`
+      `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${feePct > 0 ? `\nFee (${feePct}%): ${formatUGX(Math.round(amt * feePct / 100))}\nNet payout: ${formatUGX(amt - Math.round(amt * feePct / 100))}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${saved?.id ?? 'N/A'}`,
+      tgCreds
     ).catch(() => {});
 
     setBalance(getWalletBalance());

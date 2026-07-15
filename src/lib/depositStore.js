@@ -63,6 +63,7 @@ export function getWalletBalance() {
     .reduce((s, d) => s + (parseInt(d.amount, 10) || 0), 0);
 
   const gifts = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10) || 0;
+  const bonus = parseInt(localStorage.getItem(BONUS_KEY) || '0', 10) || 0;
 
   let withdrawn = 0;
   try {
@@ -74,7 +75,7 @@ export function getWalletBalance() {
 
   const bondDeductions = parseInt(localStorage.getItem(BOND_DEDUCTIONS_KEY) || '0', 10) || 0;
 
-  return Math.max(0, deposited + gifts - withdrawn - bondDeductions);
+  return Math.max(0, deposited + gifts + bonus - withdrawn - bondDeductions);
 }
 
 export function addGiftCredit(amount) {

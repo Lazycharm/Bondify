@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CreditCard, ArrowRight, Info } from 'lucide-react';
@@ -7,22 +7,33 @@ import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
 import { getPaymentSettings } from '@/lib/paymentSettings';
 import { getTaskFlow } from '@/lib/taskFlowStore';
+import { loadPlatformConfigFromSupabase } from '@/lib/supabase_ops';
 
 const BASE_PRESETS = [50000, 120000, 250000, 500000, 1000000, 2500000, 5000000];
 
 export default function DepositPage() {
   const navigate = useNavigate();
-
   const flow = getTaskFlow();
-  const settings = getPaymentSettings();
+  const [settings, setSettings] = useState(getPaymentSettings);
+  const userInteractedRef = useRef(false);
+
   const depositMin = parseInt(flow === 'sales' ? (settings.sales_deposit_min || '20000') : (settings.daily_deposit_min || '20000'), 10) || 20000;
   const depositMax = parseInt(flow === 'sales' ? (settings.sales_deposit_max || '0') : (settings.daily_deposit_max || '0'), 10) || 0;
-
-  // First preset is always the configured minimum; rest are filtered to be above it
   const presets = [depositMin, ...BASE_PRESETS.filter((a) => a > depositMin)];
 
   const [selected, setSelected] = useState(depositMin);
   const [custom, setCustom] = useState('');
+
+  useEffect(() => {
+    loadPlatformConfigFromSupabase().then((s) => {
+      if (!s) return;
+      setSettings(s);
+      if (!userInteractedRef.current) {
+        const newMin = parseInt(flow === 'sales' ? (s.sales_deposit_min || '20000') : (s.daily_deposit_min || '20000'), 10) || 20000;
+        setSelected(newMin);
+      }
+    });
+  }, []);
 
   const amount = custom ? parseInt(custom, 10) : selected;
   const valid = amount && amount >= depositMin && (depositMax === 0 || amount <= depositMax);
@@ -63,7 +74,7 @@ export default function DepositPage() {
               <motion.button
                 key={amt}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setSelected(amt); setCustom(''); playSound('click'); }}
+                onClick={() => { userInteractedRef.current = true; setSelected(amt); setCustom(''); playSound('click'); }}
                 className={`py-2.5 px-1 rounded-xl text-sm font-semibold border transition-all ${
                   selected === amt && !custom
                     ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
@@ -85,7 +96,7 @@ export default function DepositPage() {
               type="number"
               placeholder="Enter amount"
               value={custom}
-              onChange={(e) => { setCustom(e.target.value); setSelected(null); }}
+              onChange={(e) => { userInteractedRef.current = true; setCustom(e.target.value); setSelected(null); }}
               className="flex-1 bg-transparent outline-none text-sm"
               min={20000}
             />

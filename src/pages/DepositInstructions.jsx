@@ -104,7 +104,8 @@ export default function DepositInstructions() {
       });
 
       await sendTelegram(
-        `💰 <b>New Deposit Request</b>\n\nUser: ${user.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nPhone: ${draft.phone}\nRef: ${sms}\nID: ${saved.id}`
+        `💰 <b>New Deposit Request</b>\n\nUser: ${user.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nPhone: ${draft.phone}\nRef: ${sms}\nID: ${saved.id}`,
+        { token: settings.telegram_token, chatId: settings.telegram_chat_id }
       );
       localStorage.removeItem('bondify_deposit_draft');
       playSound('success');
