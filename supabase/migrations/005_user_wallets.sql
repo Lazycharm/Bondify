@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS public.user_wallets (
 
 ALTER TABLE public.user_wallets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "wallet: user read own"   ON public.user_wallets;
+DROP POLICY IF EXISTS "wallet: user insert own" ON public.user_wallets;
+DROP POLICY IF EXISTS "wallet: user update own" ON public.user_wallets;
+
 CREATE POLICY "wallet: user read own"
   ON public.user_wallets FOR SELECT
   USING (auth.uid() = user_id);

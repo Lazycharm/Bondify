@@ -22,7 +22,10 @@ ALTER TABLE public.platform_config
 
 -- Fix RLS: split read (all authenticated) from write (admin only)
 -- This allows users to read MTN/Airtel numbers and Telegram settings
-DROP POLICY IF EXISTS "config: admin only" ON public.platform_config;
+DROP POLICY IF EXISTS "config: admin only"            ON public.platform_config;
+DROP POLICY IF EXISTS "config: authenticated read"    ON public.platform_config;
+DROP POLICY IF EXISTS "config: admin write"           ON public.platform_config;
+DROP POLICY IF EXISTS "config: admin update"          ON public.platform_config;
 
 CREATE POLICY "config: authenticated read"
   ON public.platform_config FOR SELECT
