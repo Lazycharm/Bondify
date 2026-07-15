@@ -23,6 +23,7 @@ export default function AdminWithdrawals() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [actionError, setActionError] = useState('');
 
   async function loadWithdrawals() {
     setLoading(true);
@@ -45,12 +46,13 @@ export default function AdminWithdrawals() {
   });
 
   const act = useCallback(async (id, status) => {
+    setActionError('');
     try {
       const updated = await updateWithdrawalInSupabase(id, status);
       playSound(status === 'approved' ? 'success' : 'click');
-      await sendTelegram(
+      sendTelegram(
         `${status === 'approved' ? '✅' : '❌'} Withdrawal <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nMethod: ${updated.method}\nAccount: ${updated.account}`
-      );
+      ).catch(() => {});
       if (updated.userId) {
         addNotification(updated.userId, {
           type: status === 'approved' ? 'success' : 'error',
@@ -60,8 +62,9 @@ export default function AdminWithdrawals() {
         });
       }
       setWithdrawals((prev) => prev.map((w) => w.id === id ? { ...w, status } : w));
-    } catch {
-      // silently fail
+    } catch (e) {
+      console.error('[AdminWithdrawals] action failed:', e);
+      setActionError(`Failed to ${status} withdrawal: ${e?.message || 'unknown error'}`);
     }
   }, []);
 
@@ -79,6 +82,12 @@ export default function AdminWithdrawals() {
           </button>
         </div>
       </div>
+
+      {actionError && (
+        <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm">
+          {actionError}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {['all', 'pending', 'approved', 'rejected'].map((f) => (

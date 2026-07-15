@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { playSound as _playSound } from '@/lib/sound';
 
 /**
  * Magnetic button that subtly follows the cursor and has a ripple effect on click.
@@ -31,9 +32,7 @@ export default function MagneticButton({
   const handleClick = (e) => {
     const el = ref.current;
     if (!el) return;
-    if (sound) {
-      import('@/lib/sound').then((m) => m.playSound(sound));
-    }
+    if (sound) _playSound(sound);
     if (ripple) {
       const rect = el.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height);

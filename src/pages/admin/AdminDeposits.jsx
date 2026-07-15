@@ -23,6 +23,7 @@ export default function AdminDeposits() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [actionError, setActionError] = useState('');
 
   async function loadDeposits() {
     setLoading(true);
@@ -45,12 +46,13 @@ export default function AdminDeposits() {
   });
 
   const act = useCallback(async (id, status) => {
+    setActionError('');
     try {
       const updated = await updateDepositInSupabase(id, status);
       playSound(status === 'approved' ? 'success' : 'click');
-      await sendTelegram(
+      sendTelegram(
         `${status === 'approved' ? '✅' : '❌'} Deposit <b>${status.toUpperCase()}</b>\n\nID: ${updated.id}\nUser: ${updated.userEmail}\nAmount: ${formatUGX(updated.amount)}\nNetwork: ${updated.network?.toUpperCase()}`
-      );
+      ).catch(() => {});
       if (updated.userId) {
         addNotification(updated.userId, {
           type: status === 'approved' ? 'success' : 'error',
@@ -60,8 +62,9 @@ export default function AdminDeposits() {
         });
       }
       setDeposits((prev) => prev.map((d) => d.id === id ? { ...d, status } : d));
-    } catch {
-      // silently fail — UI doesn't crash
+    } catch (e) {
+      console.error('[AdminDeposits] action failed:', e);
+      setActionError(`Failed to ${status} deposit: ${e?.message || 'unknown error'}`);
     }
   }, []);
 
@@ -79,6 +82,13 @@ export default function AdminDeposits() {
           </button>
         </div>
       </div>
+
+      {/* Action error */}
+      {actionError && (
+        <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm">
+          {actionError}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">

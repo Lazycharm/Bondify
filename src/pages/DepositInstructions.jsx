@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Copy, Check, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { getPaymentSettings } from '@/lib/paymentSettings';

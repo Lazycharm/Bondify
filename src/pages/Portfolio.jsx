@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, ArrowUpRight, ArrowDownLeft, Wallet, CheckSquare, Crown } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownLeft, Wallet, Crown } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import CountUp from '@/components/ui/count-up';
 import { formatUGX, VIP_LEVELS } from '@/lib/vipData';
@@ -245,7 +245,7 @@ export default function Portfolio() {
         <GlassCard hover={false}>
           <h3 className="font-semibold mb-4">Recent Withdrawals</h3>
           <div className="space-y-2">
-            {data.withdrawals.map((w, i) => (
+            {data.withdrawals.map((w) => (
               <div key={w.id} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">

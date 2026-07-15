@@ -57,7 +57,7 @@ export default function Withdrawals() {
   const [lockStatus, setLockStatus] = useState({ locked: false, reason: '', unlockAt: null });
   const [feePct, setFeePct] = useState(0);
   const [limits, setLimits] = useState({ min: 10000, max: 0 });
-  const [tick, setTick] = useState(0);
+  const [_tick, setTick] = useState(0);
 
   useEffect(() => {
     setBalance(getWalletBalance());
@@ -79,7 +79,7 @@ export default function Withdrawals() {
   // Update countdown every minute
   useEffect(() => {
     if (!lockStatus.locked) return;
-    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    const id = setInterval(() => setTick((n) => n + 1), 30000);
     return () => clearInterval(id);
   }, [lockStatus.locked]);
 
@@ -94,22 +94,26 @@ export default function Withdrawals() {
     if (amt > totalWithdrawable) { setError('Insufficient balance.'); return false; }
     if (!account.trim()) { setError('Please enter your account number.'); return false; }
 
-    // Validate locally first (lock/balance checks in addWithdrawal)
-    const precheck = addWithdrawal({ userId: user?.id, userEmail: user?.email, amount: amt, method, account, bypassLock });
-    if (precheck?.error) { setError(precheck.error); return false; }
-
-    // Supabase is the primary store
+    // Supabase is the primary store — write there first
+    let saved;
     try {
-      await saveWithdrawalToSupabase({ userId: user?.id, userEmail: user?.email, amount: amt, method, account });
+      saved = await saveWithdrawalToSupabase({ userId: user?.id, userEmail: user?.email, amount: amt, method, account });
     } catch (e) {
       console.error('[Withdrawal] Supabase save failed:', e);
       setError('Failed to submit withdrawal. Please check your connection and try again.');
       return false;
     }
 
-    await sendTelegram(
-      `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${result.fee > 0 ? `\nFee (${feePct}%): ${formatUGX(result.fee)}\nNet payout: ${formatUGX(result.net_amount)}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${result.id}`
-    );
+    // Mirror to localStorage only after Supabase succeeds
+    const localEntry = addWithdrawal({ userId: user?.id, userEmail: user?.email, amount: amt, method, account, bypassLock });
+    if (localEntry?.error) {
+      // localStorage validation failed (e.g. lock), but Supabase already wrote — log it and proceed
+      console.warn('[Withdrawal] localStorage validation error after Supabase write:', localEntry.error);
+    }
+
+    sendTelegram(
+      `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${feePct > 0 ? `\nFee (${feePct}%): ${formatUGX(Math.round(amt * feePct / 100))}\nNet payout: ${formatUGX(amt - Math.round(amt * feePct / 100))}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${saved?.id ?? 'N/A'}`
+    ).catch(() => {});
 
     setBalance(getWalletBalance());
     setHistory(getUserWithdrawals(user.id));

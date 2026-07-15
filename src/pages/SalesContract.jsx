@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FileText, PenLine, Check, Building2, User, Phone } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { formatUGX } from '@/lib/vipData';

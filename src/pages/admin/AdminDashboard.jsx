@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Download, Upload, Clock, CheckCircle2, XCircle, Users } from 'lucide-react';
+import { Download, Upload, Clock } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { getDeposits } from '@/lib/depositStore';
 import { getWithdrawals } from '@/lib/withdrawalStore';

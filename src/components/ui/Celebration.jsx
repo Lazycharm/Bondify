@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { playSound } from '@/lib/sound';
 
 /**
  * Fires a confetti burst. Call imperatively.
@@ -24,7 +25,7 @@ export function CelebrationOverlay({ show, title, subtitle, onClose, autoDismiss
   useEffect(() => {
     if (show) {
       fireConfetti();
-      import('@/lib/sound').then((m) => m.playSound('reward'));
+      playSound('reward');
       setCoins(
         Array.from({ length: 14 }, (_, i) => ({
           id: i,

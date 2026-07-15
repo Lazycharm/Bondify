@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Mail, Phone, Shield, Bell, Lock, Eye, EyeOff,
@@ -48,7 +48,7 @@ export default function Profile() {
   const [fullName, setFullName] = useState(stored.fullName || authName);
   const [phone, setPhone] = useState(stored.phone || '');
   const [showPass, setShowPass] = useState(false);
-  const [currentPass, setCurrentPass] = useState('');
+  const [_currentPass, setCurrentPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
 

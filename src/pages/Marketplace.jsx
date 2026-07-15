@@ -32,12 +32,9 @@ export default function Marketplace() {
   const [typeFilter, setTypeFilter] = useState('All');
   const [sortBy, setSortBy] = useState('roi');
   const [userVip, setUserVip] = useState(1);
-  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    const bal = getWalletBalance();
-    setBalance(bal);
-    setUserVip(getCurrentVipLevel(bal));
+    setUserVip(getCurrentVipLevel(getWalletBalance()));
   }, []);
 
   const filtered = useMemo(() => {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, BarChart2, Landmark, Globe, Star, Crown, Gem,
-  X, ChevronRight, Info, Wallet, Clock, Layers, CheckCircle2,
+  X, ChevronRight, Info, Wallet, Layers, CheckCircle2,
   AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { formatUGX } from '@/lib/vipData';

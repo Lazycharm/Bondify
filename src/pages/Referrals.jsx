@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Share2, Trophy, Users, CheckCircle2, Gift, ChevronRight, Zap } from 'lucide-react';
+import { Copy, Share2, Trophy, Users, CheckCircle2, Gift, Zap } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { formatUGX } from '@/lib/vipData';
 import {

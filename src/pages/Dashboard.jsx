@@ -111,7 +111,7 @@ function DailyDashboard({ user, displayName }) {
     return () => clearInterval(id);
   }, []);
 
-  const { balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, vip, nextVip, amountNeeded } = stats;
+  const { balance, bonus, bonusWithdrawable, activeBonds, todayIncome, totalInvested, totalBondIncome, nextVip, amountNeeded } = stats;
 
   function handleHelp() {
     const { support_telegram_link } = getPaymentSettings();

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Download, Upload, Users,
-  Menu, X, LogOut, ChevronRight, Shield, BarChart2, Share2, SlidersHorizontal,
+  Menu, LogOut, ChevronRight, Shield, BarChart2, Share2, SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
@@ -22,7 +22,6 @@ const NAV = [
 export default function AdminLayout() {
   const { logout, user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const Sidebar = (

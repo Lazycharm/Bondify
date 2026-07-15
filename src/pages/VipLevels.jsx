@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
-import { Lock, Check, TrendingUp } from 'lucide-react';
+import { Lock, Check } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
-import CountUp from '@/components/ui/count-up';
-import { VIP_LEVELS, formatUGX, formatUGXShort } from '@/lib/vipData';
+import { VIP_LEVELS, formatUGXShort } from '@/lib/vipData';
 
 export default function VipLevels() {
   const currentLevel = 2;

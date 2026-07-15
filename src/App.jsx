@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
@@ -54,6 +55,7 @@ import AdminConfig from '@/pages/admin/AdminConfig';
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <ThemeProvider>
@@ -119,6 +121,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

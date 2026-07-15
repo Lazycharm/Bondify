@@ -9,19 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setIsAuthenticated(!!user);
-      setIsLoadingAuth(false);
-    });
-
+    // Use onAuthStateChange exclusively — it fires immediately with the current session
+    // via INITIAL_SESSION, so getSession() is not needed separately.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setIsAuthenticated(!!session?.user);
       setIsLoadingAuth(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback: if onAuthStateChange hasn't fired after 3s (edge case), unblock the app
+    const fallback = setTimeout(() => setIsLoadingAuth(false), 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(fallback);
+    };
   }, []);
 
   const logout = async () => {

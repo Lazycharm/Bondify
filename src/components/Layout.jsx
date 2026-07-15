@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, TrendingUp, Gift, Crown, Users, Trophy, LifeBuoy,
-  Sun, Moon, Volume2, VolumeX, Bell, Menu, LogOut, ArrowUpRight, User,
-  Settings, CheckCheck, Info, Lock, X, ExternalLink, BookOpen, Award,
+  LayoutDashboard, TrendingUp, Crown, Trophy, LifeBuoy,
+  Sun, Moon, Volume2, VolumeX, Bell, Menu, LogOut,
+  Settings, CheckCheck, Info, Lock, X, ExternalLink,
   BarChart2,
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';

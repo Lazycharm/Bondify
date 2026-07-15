@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users, Search, Wallet, TrendingUp, Clock, CheckCircle2,
-  Crown, RefreshCw, Edit2, X, Plus, Minus,
+  Users, Search, Wallet, TrendingUp, Clock, CheckCircle2, Edit2, X, Plus, Minus, RefreshCw,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
-import { getDeposits, addGiftCredit } from '@/lib/depositStore';
+import { getAllDepositsFromSupabase } from '@/lib/supabase_ops';
 import { formatUGX, VIP_LEVELS } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
 
@@ -161,36 +160,44 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  function loadUsers() {
-    const deposits = getDeposits();
-    const overrides = getAdminOverrides();
-    const map = {};
+  async function loadUsers() {
+    setLoading(true);
+    try {
+      const deposits = await getAllDepositsFromSupabase();
+      const overrides = getAdminOverrides();
+      const map = {};
 
-    deposits.forEach((d) => {
-      const uid = d.userId;
-      if (!uid) return;
-      if (!map[uid]) {
-        map[uid] = { userId: uid, email: d.userEmail || `user-${uid.slice(0, 8)}`, allDeposits: [], firstSeen: d.created_at };
-      }
-      map[uid].allDeposits.push(d);
-      if (new Date(d.created_at) < new Date(map[uid].firstSeen)) map[uid].firstSeen = d.created_at;
-    });
+      deposits.forEach((d) => {
+        const uid = d.userId;
+        if (!uid) return;
+        if (!map[uid]) {
+          map[uid] = { userId: uid, email: d.userEmail || `user-${uid.slice(0, 8)}`, allDeposits: [], firstSeen: d.created_at };
+        }
+        map[uid].allDeposits.push(d);
+        if (new Date(d.created_at) < new Date(map[uid].firstSeen)) map[uid].firstSeen = d.created_at;
+      });
 
-    const list = Object.values(map).map((u) => {
-      const approved = u.allDeposits.filter((d) => d.status === 'approved');
-      const pending = u.allDeposits.filter((d) => d.status === 'pending');
-      const totalDeposited = approved.reduce((s, d) => s + parseInt(d.amount, 10), 0);
-      const uOverride = overrides[u.userId] || {};
-      const vip = uOverride.vip_level
-        ? (VIP_LEVELS.find((v) => v.level === uOverride.vip_level) ?? getCurrentVip(totalDeposited))
-        : getCurrentVip(totalDeposited);
-      const taskFlow = uOverride.task_flow || 'daily';
-      return { ...u, totalDeposited, depositCount: u.allDeposits.length, approvedCount: approved.length, pendingCount: pending.length, vip, taskFlow };
-    });
+      const list = Object.values(map).map((u) => {
+        const approved = u.allDeposits.filter((d) => d.status === 'approved');
+        const pending = u.allDeposits.filter((d) => d.status === 'pending');
+        const totalDeposited = approved.reduce((s, d) => s + parseInt(d.amount, 10), 0);
+        const uOverride = overrides[u.userId] || {};
+        const vip = uOverride.vip_level
+          ? (VIP_LEVELS.find((v) => v.level === uOverride.vip_level) ?? getCurrentVip(totalDeposited))
+          : getCurrentVip(totalDeposited);
+        const taskFlow = uOverride.task_flow || 'daily';
+        return { ...u, totalDeposited, depositCount: u.allDeposits.length, approvedCount: approved.length, pendingCount: pending.length, vip, taskFlow };
+      });
 
-    list.sort((a, b) => new Date(b.firstSeen) - new Date(a.firstSeen));
-    setUsers(list);
+      list.sort((a, b) => new Date(b.firstSeen) - new Date(a.firstSeen));
+      setUsers(list);
+    } catch (e) {
+      console.error('[AdminUsers] loadUsers failed:', e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { loadUsers(); }, []);
@@ -207,9 +214,14 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Users</h1>
-        <p className="text-sm text-muted-foreground mt-1">All users from deposit activity — edit VIP, task mode, and balances.</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Users</h1>
+          <p className="text-sm text-muted-foreground mt-1">All users from deposit activity — edit VIP, task mode, and balances.</p>
+        </div>
+        <button onClick={loadUsers} disabled={loading} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border hover:bg-muted/30 transition-colors text-xs disabled:opacity-50">
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -261,7 +273,9 @@ export default function AdminUsers() {
         <p className="text-xs text-muted-foreground">{filtered.length} user{filtered.length !== 1 ? 's' : ''}</p>
       </GlassCard>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-20 text-muted-foreground text-sm">Loading users…</div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground text-sm">
           {users.length === 0 ? 'No deposits recorded yet.' : 'No users match your search.'}
         </div>

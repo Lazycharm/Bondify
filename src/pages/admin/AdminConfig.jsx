@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Save, Send, CheckCircle2, Smartphone, Bot, Shield,
+  Save, Send, CheckCircle2, Smartphone, Bot,
   Camera, BarChart2, Percent, Clock, Users, CreditCard, Lock, Wallet, Gift,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
@@ -46,6 +46,7 @@ function SectionHeader({ icon: Icon, color, title, subtitle }) {
 export default function AdminConfig() {
   const [form, setForm] = useState(() => getPaymentSettings());
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState('');
 
@@ -58,7 +59,13 @@ export default function AdminConfig() {
 
   async function handleSave() {
     savePaymentSettings(form);
-    savePlatformConfigToSupabase(form).catch(() => {}); // best-effort background sync
+    setSaveError('');
+    try {
+      await savePlatformConfigToSupabase(form);
+    } catch (e) {
+      console.error('[AdminConfig] Supabase save failed:', e);
+      setSaveError(`Supabase sync failed: ${e?.message || 'unknown error'}. Settings saved locally only.`);
+    }
     playSound('success');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -285,6 +292,13 @@ export default function AdminConfig() {
           hint="Amount credited to user wallet when they open the daily gift box. Set 0 to disable gifts."
         />
       </GlassCard>
+
+      {/* Save error */}
+      {saveError && (
+        <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-sm">
+          ⚠ {saveError}
+        </div>
+      )}
 
       {/* Save platform settings */}
       <button onClick={handleSave}

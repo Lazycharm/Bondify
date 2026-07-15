@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Wallet, Gift, Users, Clock, Search,
+  Wallet, Gift, Users, Search,
   ArrowUpRight, ArrowDownLeft, Plus, ChevronRight, BarChart2, TrendingUp,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
@@ -10,7 +10,7 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/lib/AuthContext';
 import { getWalletBalance, getUserDeposits, getBonusBalance, isBonusWithdrawable } from '@/lib/depositStore';
 import { getUserWithdrawals } from '@/lib/withdrawalStore';
-import { getActiveBonds, getTotalInvested, getTotalBondIncome } from '@/lib/bondStore';
+import { getTotalInvested, getTotalBondIncome } from '@/lib/bondStore';
 import { calcReferralEarnings } from '@/lib/referralStore';
 import { formatUGX } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
