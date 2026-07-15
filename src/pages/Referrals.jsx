@@ -4,15 +4,16 @@ import { Copy, Share2, Trophy, Users, CheckCircle2, Gift, Zap } from 'lucide-rea
 import GlassCard from '@/components/ui/GlassCard';
 import { formatUGX } from '@/lib/vipData';
 import {
-  getMyReferralCode, getReferralLink, calcReferralEarnings, getCommissionRates,
+  getMyReferralCode, getReferralLink, getMyReferrals, getCommissionRates,
 } from '@/lib/referralStore';
-import { syncUserReferrals } from '@/lib/supabase_ops';
+import { syncUserReferrals, syncReferralEarnings } from '@/lib/supabase_ops';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
 
 export default function Referrals() {
   const { user } = useAuth();
-  const [earnings, setEarnings] = useState({ lv1: { count: 0, earned: 0 }, lv2: { count: 0, earned: 0 }, lv3: { count: 0, earned: 0 }, total: 0 });
+  const [lv1Count, setLv1Count] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
   const [rates, setRates] = useState({ 1: 0.05, 2: 0.02, 3: 0.01 });
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -22,12 +23,13 @@ export default function Referrals() {
 
   useEffect(() => {
     if (!user?.id) return;
-    setEarnings(calcReferralEarnings(user.id));
     setRates(getCommissionRates());
-    // Sync from Supabase then refresh so counts are accurate on any device
+    // Sync referrals (for count) and earnings (for amount) from Supabase
     syncUserReferrals(user.id).then(() => {
-      setEarnings(calcReferralEarnings(user.id));
-      setRates(getCommissionRates());
+      setLv1Count(getMyReferrals(user.id).length);
+    });
+    syncReferralEarnings(user.id).then((earned) => {
+      setTotalEarned(earned);
     });
   }, [user?.id]);
 
@@ -56,26 +58,23 @@ export default function Referrals() {
     playSound('click');
   };
 
-  const totalInvited = earnings.lv1.count + earnings.lv2.count + earnings.lv3.count;
-  const totalEarned = earnings.total;
-
   const LEVELS = [
     {
       level: 1, label: 'Direct Referrals', sublabel: 'People you invite',
       rate: Math.round(rates[1] * 100), color: 'from-emerald-500 to-teal-600',
-      count: earnings.lv1.count, earned: earnings.lv1.earned,
+      count: lv1Count, earned: totalEarned,
       desc: 'When someone joins using your link and recharges, you get this % of their deposit.',
     },
     {
       level: 2, label: 'Level 2', sublabel: "Your referrals' referrals",
       rate: Math.round(rates[2] * 100), color: 'from-sky-400 to-blue-500',
-      count: earnings.lv2.count, earned: earnings.lv2.earned,
+      count: 0, earned: 0,
       desc: 'When someone invited by your friends recharges, you also earn a cut.',
     },
     {
       level: 3, label: 'Level 3', sublabel: '3rd level network',
       rate: Math.round(rates[3] * 100), color: 'from-violet-400 to-purple-500',
-      count: earnings.lv3.count, earned: earnings.lv3.earned,
+      count: 0, earned: 0,
       desc: 'Your network grows deep — earn from 3 levels of referrals.',
     },
   ];
@@ -96,7 +95,7 @@ export default function Referrals() {
                 <Users size={14} className="text-white/70" />
                 <span className="text-white/70 text-xs">Total Invited</span>
               </div>
-              <p className="text-3xl font-black text-white">{totalInvited}</p>
+              <p className="text-3xl font-black text-white">{lv1Count}</p>
               <p className="text-white/60 text-[11px] mt-0.5">across all levels</p>
             </div>
             <div className="text-center">

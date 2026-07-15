@@ -3,6 +3,7 @@
  * All writes go to Supabase first. localStorage is a read-cache only.
  */
 import { supabase } from '@/api/supabaseClient';
+import { getPaymentSettings } from '@/lib/paymentSettings';
 
 const SETTINGS_KEY    = 'bondify_payment_settings';
 const DEPOSITS_KEY    = 'bondify_deposits';
@@ -178,7 +179,39 @@ export async function updateDepositInSupabase(id, status) {
     .single();
 
   if (error) { console.error('[Supabase] updateDeposit:', error.message); throw error; }
-  return mapDepositFromDb(data);
+  const deposit = mapDepositFromDb(data);
+
+  if (status === 'approved') {
+    creditReferralCommission(deposit).catch((e) =>
+      console.error('[Supabase] creditReferralCommission:', e.message)
+    );
+  }
+
+  return deposit;
+}
+
+async function creditReferralCommission(deposit) {
+  if (!deposit.userEmail || !deposit.amount) return;
+
+  // Find who referred this depositor at LV1
+  const { data: refs } = await supabase
+    .from('referrals')
+    .select('referrer_id')
+    .eq('referred_email', deposit.userEmail.toLowerCase())
+    .eq('level', 1)
+    .limit(1);
+
+  if (!refs?.length) return;
+
+  const s = getPaymentSettings();
+  const lv1Rate = parseFloat(s.referral_lv1 || '5') / 100;
+  const commission = Math.floor(deposit.amount * lv1Rate);
+  if (commission <= 0) return;
+
+  await supabase.rpc('credit_referral_commission', {
+    p_code:   refs[0].referrer_id,
+    p_amount: commission,
+  });
 }
 
 // ── WITHDRAWALS ───────────────────────────────────────────────────────────────
@@ -337,6 +370,26 @@ export async function uploadWalletData(userId) {
   }
 }
 
+// ── REFERRAL EARNINGS ─────────────────────────────────────────────────────────
+
+export async function syncReferralEarnings(userId) {
+  if (!userId) return 0;
+  const code = userId.slice(0, 8).toUpperCase();
+  try {
+    const { data } = await supabase
+      .from('referral_earnings')
+      .select('total_earned')
+      .eq('referrer_code', code)
+      .maybeSingle();
+    const earned = data?.total_earned || 0;
+    localStorage.setItem('bondify_referral_earnings', String(earned));
+    return earned;
+  } catch (e) {
+    console.error('[Supabase] syncReferralEarnings:', e);
+    return 0;
+  }
+}
+
 // ── SYNC ALL USER DATA ────────────────────────────────────────────────────────
 
 export async function syncAllUserData(userId) {
@@ -346,5 +399,6 @@ export async function syncAllUserData(userId) {
     syncUserWithdrawals(userId),
     syncUserReferrals(userId),
     syncWalletData(userId),
+    syncReferralEarnings(userId),
   ]);
 }
