@@ -107,10 +107,10 @@ export default function WalletPage() {
       <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 text-sm flex items-start gap-3">
         <Gift className="text-amber-500 shrink-0 mt-0.5" size={18} />
         <p className="text-foreground/80">
-          <span className="font-semibold text-amber-500">Welcome Bonus — UGX 10,000:</span>{' '}
+          <span className="font-semibold text-amber-500">Welcome Bonus — UGX 5,000:</span>{' '}
           {bonusUnlocked
             ? 'Great — your bonus is unlocked and ready to withdraw! Go to Withdrawals to claim it.'
-            : 'Make your first recharge and your UGX 10,000 welcome bonus unlocks immediately — no waiting.'}
+            : 'Make your first recharge and your UGX 5,000 welcome bonus unlocks immediately — no waiting.'}
         </p>
       </div>
 

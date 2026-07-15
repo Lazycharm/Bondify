@@ -14,7 +14,7 @@ const STEPS = [
       'Before anything else, you need money in your wallet.',
       'The minimum to start is UGX 20,000.',
       'Go to the Recharge page, enter the amount, then follow the payment instructions shown to you.',
-      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited plus your UGX 10,000 welcome bonus is unlocked immediately.',
+      'As soon as the admin approves it (usually within a few minutes), your wallet gets credited plus your UGX 5,000 welcome bonus is unlocked immediately.',
     ],
   },
   {

@@ -12,7 +12,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isMuted, setMuted, playSound } from '@/lib/sound';
 import { isAdmin } from '@/lib/paymentSettings';
 import { getPaymentSettings } from '@/lib/paymentSettings';
-import { getUserNotifications, getUnreadCount, markAllRead } from '@/lib/notificationStore';
+import { getUserNotifications, getUnreadCount, markAllRead, refreshNotifications } from '@/lib/notificationStore';
 import { getTaskFlow } from '@/lib/taskFlowStore';
 import BottomNav from '@/components/BottomNav';
 import InstallPrompt from '@/components/ui/InstallPrompt';
@@ -74,9 +74,11 @@ export default function Layout() {
     const opening = !notifOpen;
     setNotifOpen(opening);
     if (opening && user?.id) {
-      markAllRead(user.id);
-      setUnread(0);
-      setNotifications(getUserNotifications(user.id).slice(0, 20));
+      refreshNotifications(user.id).then(() => {
+        markAllRead(user.id);
+        setUnread(0);
+        setNotifications(getUserNotifications(user.id).slice(0, 20));
+      });
     }
     playSound('click');
   }

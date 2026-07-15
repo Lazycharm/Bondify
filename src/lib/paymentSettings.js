@@ -22,6 +22,7 @@ const DEFAULTS = {
   sales_deposit_min: '20000',
   sales_deposit_max: '0',
   daily_gift_amount: '1000',
+  first_deposit_bonus: '5000',
 };
 
 export function getPaymentSettings() {

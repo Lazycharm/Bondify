@@ -1,4 +1,5 @@
 import { getWalletBalance, addGiftCredit } from './depositStore';
+import { uploadUserBond, uploadAllUserBonds } from './supabase_ops';
 
 const BONDS_KEY = (uid) => `bondify_bonds_${uid}`;
 const DEDUCTIONS_KEY = 'bondify_bond_deductions';
@@ -45,6 +46,7 @@ export function purchaseBond(userId, product) {
   const bonds = getUserBonds(userId);
   bonds.unshift(bond);
   localStorage.setItem(BONDS_KEY(userId), JSON.stringify(bonds));
+  uploadUserBond(bond).catch(() => {});
   return bond;
 }
 
@@ -70,6 +72,7 @@ export function checkAndCreditDailyProfits(userId) {
 
   localStorage.setItem(BONDS_KEY(userId), JSON.stringify(updated));
   if (totalNewCredit > 0) addGiftCredit(totalNewCredit);
+  uploadAllUserBonds(userId, updated).catch(() => {});
   return totalNewCredit;
 }
 

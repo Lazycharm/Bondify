@@ -162,7 +162,7 @@ function DailyDashboard({ user, displayName }) {
             </div>
           </div>
           <button
-            onClick={() => { activateSalesFlow(); playSound('success'); window.location.reload(); }}
+            onClick={() => { activateSalesFlow(user?.id); playSound('success'); window.location.reload(); }}
             className="mt-3 w-full py-2.5 rounded-xl bg-white text-violet-700 font-bold text-sm"
           >
             Activate Sales Trader Mode →
@@ -205,19 +205,19 @@ function DailyDashboard({ user, displayName }) {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${bonusWithdrawable ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}>🎁</div>
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-bold ${bonusWithdrawable ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {bonusWithdrawable ? 'Your UGX 10,000 bonus is ready!' : 'UGX 10,000 Welcome Bonus Waiting'}
+                  {bonusWithdrawable ? 'Your UGX 5,000 bonus is ready!' : 'UGX 5,000 Welcome Bonus Waiting'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {bonusWithdrawable
                     ? 'Your welcome bonus has been unlocked. You can withdraw it anytime!'
-                    : 'Make your first recharge to unlock your UGX 10,000 welcome bonus immediately.'}
+                    : 'Make your first recharge to unlock your UGX 5,000 welcome bonus immediately.'}
                 </p>
               </div>
             </div>
             {bonusWithdrawable && (
               <button
                 onClick={() => {
-                  addGiftCredit(10000);
+                  addGiftCredit(5000);
                   localStorage.setItem('bondify_bonus_claimed', '1');
                   playSound('click');
                   navigate('/dashboard/withdrawals');

@@ -55,6 +55,7 @@ export async function loadPlatformConfigFromSupabase() {
       referral_lv2:          data.referral_lv2          || '2',
       referral_lv3:          data.referral_lv3          || '1',
       daily_gift_amount:     data.daily_gift_amount     || '1000',
+      first_deposit_bonus:   data.first_deposit_bonus   || '5000',
     };
 
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -93,6 +94,7 @@ export async function savePlatformConfigToSupabase(settings) {
     referral_lv2:          settings.referral_lv2          || '2',
     referral_lv3:          settings.referral_lv3          || '1',
     daily_gift_amount:     settings.daily_gift_amount     || '1000',
+    first_deposit_bonus:   settings.first_deposit_bonus   || '5000',
     bond_packages:         settings.bond_packages         || null,
     updated_at:            new Date().toISOString(),
   });
@@ -154,7 +156,8 @@ export async function syncUserDeposits(userId) {
     const approvedDeposits = mapped.filter((d) => d.status === 'approved');
     if (approvedDeposits.length > 0 && !localStorage.getItem('bondify_bonus_given')) {
       localStorage.setItem('bondify_bonus_given', '1');
-      localStorage.setItem('bondify_bonus_balance', '10000');
+      const bonusAmt = parseInt(getPaymentSettings().first_deposit_bonus || '5000', 10) || 5000;
+      localStorage.setItem('bondify_bonus_balance', String(bonusAmt));
       localStorage.setItem('bondify_bonus_withdrawable', '1');
     }
     const hasSalesDeposit = approvedDeposits.some((d) => (parseInt(d.amount, 10) || 0) >= 250000);
@@ -344,7 +347,6 @@ export async function syncUserReferrals(userId) {
 
 export async function syncWalletData(userId) {
   try {
-    // maybeSingle() returns null (not an error) when 0 rows — avoids 406 in console for new users
     const { data, error } = await supabase
       .from('user_wallets')
       .select('gift_credits, bond_deductions')
@@ -353,7 +355,9 @@ export async function syncWalletData(userId) {
 
     if (error) { console.error('[Supabase] syncWalletData:', error.message); return; }
     if (!data) return;
-    localStorage.setItem('bondify_gift_credits', String(data.gift_credits || 0));
+    // gift_credits = admin-granted credits only; stored in separate key to avoid
+    // overwriting bond income accumulated in bondify_gift_credits
+    localStorage.setItem('bondify_admin_gifts', String(data.gift_credits || 0));
     localStorage.setItem('bondify_bond_deductions', String(data.bond_deductions || 0));
   } catch (e) {
     console.error('[Supabase] syncWalletData exception:', e);
@@ -362,12 +366,11 @@ export async function syncWalletData(userId) {
 
 export async function uploadWalletData(userId) {
   if (!userId) return;
-  const giftCredits    = parseInt(localStorage.getItem('bondify_gift_credits')    || '0', 10) || 0;
+  // Only sync bond_deductions — gift_credits are admin-only via RPC
   const bondDeductions = parseInt(localStorage.getItem('bondify_bond_deductions') || '0', 10) || 0;
   try {
     const { error } = await supabase.from('user_wallets').upsert({
       user_id:         userId,
-      gift_credits:    giftCredits,
       bond_deductions: bondDeductions,
       updated_at:      new Date().toISOString(),
     }, { onConflict: 'user_id' });
@@ -397,6 +400,231 @@ export async function syncReferralEarnings(userId) {
   }
 }
 
+// ── USER BONDS ────────────────────────────────────────────────────────────────
+
+export async function syncUserBonds(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('user_bonds')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('[Supabase] syncUserBonds:', error.message); return; }
+    const mapped = (data || []).map((b) => ({
+      id:                 b.id,
+      userId:             b.user_id,
+      product_id:         b.product_id,
+      product_name:       b.product_name,
+      color:              b.color,
+      price:              b.price,
+      daily_income:       b.daily_income,
+      total_income:       b.total_income,
+      term_days:          b.term_days,
+      started_at:         b.started_at,
+      last_credited_date: b.last_credited_date,
+      total_credited:     b.total_credited,
+      days_completed:     b.days_completed,
+      is_active:          b.is_active,
+      created_at:         b.created_at,
+    }));
+    localStorage.setItem(`bondify_bonds_${userId}`, JSON.stringify(mapped));
+    // Rebuild bond income from authoritative total_credited values
+    const totalBondIncome = mapped.reduce((s, b) => s + (b.total_credited || 0), 0);
+    localStorage.setItem('bondify_gift_credits', String(totalBondIncome));
+    return mapped;
+  } catch (e) {
+    console.error('[Supabase] syncUserBonds exception:', e);
+  }
+}
+
+export async function uploadUserBond(bond) {
+  const { error } = await supabase.from('user_bonds').upsert({
+    id:                 bond.id,
+    user_id:            bond.userId,
+    product_id:         bond.product_id,
+    product_name:       bond.product_name,
+    color:              bond.color || '',
+    price:              bond.price,
+    daily_income:       bond.daily_income,
+    total_income:       bond.total_income,
+    term_days:          bond.term_days,
+    started_at:         bond.started_at,
+    last_credited_date: bond.last_credited_date,
+    total_credited:     bond.total_credited,
+    days_completed:     bond.days_completed,
+    is_active:          bond.is_active,
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] uploadUserBond:', error.message);
+}
+
+export async function uploadAllUserBonds(userId, bonds) {
+  if (!userId || !bonds?.length) return;
+  const rows = bonds.map((b) => ({
+    id:                 b.id,
+    user_id:            b.userId,
+    product_id:         b.product_id,
+    product_name:       b.product_name,
+    color:              b.color || '',
+    price:              b.price,
+    daily_income:       b.daily_income,
+    total_income:       b.total_income,
+    term_days:          b.term_days,
+    started_at:         b.started_at,
+    last_credited_date: b.last_credited_date,
+    total_credited:     b.total_credited,
+    days_completed:     b.days_completed,
+    is_active:          b.is_active,
+  }));
+  const { error } = await supabase.from('user_bonds').upsert(rows, { onConflict: 'id' });
+  if (error) console.error('[Supabase] uploadAllUserBonds:', error.message);
+}
+
+// ── TASK STATE + FLOW ─────────────────────────────────────────────────────────
+
+export async function syncUserTaskState(userId) {
+  try {
+    const { data } = await supabase
+      .from('user_wallets')
+      .select('task_flow, sales_activated_at, task_completed_today, task_total_completed, task_session_day, task_last_day_date, task_countdown_end, vip_level_override, last_checkin_at, last_gift_claimed_date, profile_name, profile_phone')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!data) return;
+    if (data.task_flow)          localStorage.setItem('bondify_task_flow', data.task_flow);
+    if (data.sales_activated_at) localStorage.setItem('bondify_sales_activated_at', data.sales_activated_at);
+    if (data.vip_level_override != null) localStorage.setItem('bondify_vip_override', String(data.vip_level_override));
+
+    // Restore check-in — use Supabase value if more recent than local
+    if (data.last_checkin_at) {
+      const existing = JSON.parse(localStorage.getItem('bondify_checkin') || '{"lastCheckin":null,"history":[]}');
+      const supabaseMs = new Date(data.last_checkin_at).getTime();
+      const localMs    = existing.lastCheckin ? new Date(existing.lastCheckin).getTime() : 0;
+      if (supabaseMs > localMs) {
+        existing.lastCheckin = data.last_checkin_at;
+        localStorage.setItem('bondify_checkin', JSON.stringify(existing));
+      }
+    }
+
+    // Restore daily gift claim — prevent re-claiming on a new device
+    if (data.last_gift_claimed_date) {
+      const existing = JSON.parse(localStorage.getItem('bondify_gift_v2') || '{"lastClaimed":null,"history":[]}');
+      if (existing.lastClaimed !== data.last_gift_claimed_date) {
+        existing.lastClaimed = data.last_gift_claimed_date;
+        localStorage.setItem('bondify_gift_v2', JSON.stringify(existing));
+      }
+    }
+
+    // Restore profile if Supabase has data and local is empty
+    if (data.profile_name || data.profile_phone) {
+      const existing = JSON.parse(localStorage.getItem('bondify_profile') || '{}');
+      if (data.profile_name  && !existing.fullName) existing.fullName = data.profile_name;
+      if (data.profile_phone && !existing.phone)    existing.phone    = data.profile_phone;
+      localStorage.setItem('bondify_profile', JSON.stringify(existing));
+    }
+
+    const taskState = {
+      completedToday: data.task_completed_today || 0,
+      totalCompleted: data.task_total_completed || 0,
+      sessionDay:     data.task_session_day     || 1,
+      lastDayDate:    data.task_last_day_date   || new Date().toDateString(),
+      countdownEnd:   data.task_countdown_end   || null,
+    };
+    localStorage.setItem('bondify_task_state', JSON.stringify(taskState));
+    return taskState;
+  } catch (e) {
+    console.error('[Supabase] syncUserTaskState:', e);
+  }
+}
+
+export async function uploadCheckIn(userId, isoTimestamp) {
+  if (!userId) return;
+  const { error } = await supabase.from('user_wallets').upsert({
+    user_id:         userId,
+    last_checkin_at: isoTimestamp,
+    updated_at:      new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+  if (error) console.error('[Supabase] uploadCheckIn:', error.message);
+}
+
+export async function uploadDailyGiftClaim(userId, dateString) {
+  if (!userId) return;
+  const { error } = await supabase.from('user_wallets').upsert({
+    user_id:                userId,
+    last_gift_claimed_date: dateString,
+    updated_at:             new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+  if (error) console.error('[Supabase] uploadDailyGiftClaim:', error.message);
+}
+
+export async function uploadUserProfile(userId, { fullName, phone }) {
+  if (!userId) return;
+  const { error } = await supabase.from('user_wallets').upsert({
+    user_id:       userId,
+    profile_name:  fullName || '',
+    profile_phone: phone    || '',
+    updated_at:    new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+  if (error) console.error('[Supabase] uploadUserProfile:', error.message);
+}
+
+export async function uploadUserTaskState(userId, taskState) {
+  if (!userId) return;
+  const { error } = await supabase.from('user_wallets').upsert({
+    user_id:               userId,
+    task_completed_today:  taskState.completedToday || 0,
+    task_total_completed:  taskState.totalCompleted || 0,
+    task_session_day:      taskState.sessionDay     || 1,
+    task_last_day_date:    taskState.lastDayDate    || '',
+    task_countdown_end:    taskState.countdownEnd   || null,
+    updated_at:            new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+  if (error) console.error('[Supabase] uploadUserTaskState:', error.message);
+}
+
+export async function uploadUserFlow(userId, flow, salesActivatedAt = null) {
+  if (!userId) return;
+  const row = { user_id: userId, task_flow: flow, updated_at: new Date().toISOString() };
+  if (salesActivatedAt) row.sales_activated_at = salesActivatedAt;
+  const { error } = await supabase.from('user_wallets').upsert(row, { onConflict: 'user_id' });
+  if (error) console.error('[Supabase] uploadUserFlow:', error.message);
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+
+export async function syncNotifications(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) { console.error('[Supabase] syncNotifications:', error.message); return; }
+    const mapped = (data || []).map((n) => ({
+      id: n.id, userId: n.user_id, message: n.message, type: n.type, read: n.read, created_at: n.created_at,
+    }));
+    localStorage.setItem('bondify_notifications', JSON.stringify(mapped));
+    return mapped;
+  } catch (e) {
+    console.error('[Supabase] syncNotifications:', e);
+  }
+}
+
+export async function addNotificationToSupabase(userId, { message, type = 'info' }) {
+  const id = `N-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const { error } = await supabase.from('notifications').insert({ id, user_id: userId, message, type, read: false });
+  if (error) console.error('[Supabase] addNotification:', error.message);
+  return id;
+}
+
+export async function markNotificationsReadInSupabase(userId) {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('user_id', userId)
+    .eq('read', false);
+  if (error) console.error('[Supabase] markNotificationsRead:', error.message);
+}
+
 // ── SYNC ALL USER DATA ────────────────────────────────────────────────────────
 
 export async function syncAllUserData(userId) {
@@ -407,5 +635,8 @@ export async function syncAllUserData(userId) {
     syncUserReferrals(userId),
     syncWalletData(userId),
     syncReferralEarnings(userId),
+    syncUserBonds(userId),
+    syncUserTaskState(userId),
+    syncNotifications(userId),
   ]);
 }

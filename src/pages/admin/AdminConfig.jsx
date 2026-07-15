@@ -286,17 +286,26 @@ export default function AdminConfig() {
         <Field label="Admin Emails" id="admin_emails" value={form.admin_emails} onChange={set('admin_emails')} placeholder="admin@example.com, another@example.com" hint="Comma-separated. Leave blank to allow any logged-in user (not recommended)." />
       </GlassCard>
 
-      {/* ─── Daily Gift Settings ─────────────────────────────── */}
+      {/* ─── Daily Gift & Bonus Settings ─────────────────────── */}
       <GlassCard hover={false} className="space-y-4">
-        <SectionHeader icon={Gift} color="bg-amber-500" title="Daily Gift Settings" subtitle="Gift amount credited when users open the 3:30–4:00 PM gift window." />
+        <SectionHeader icon={Gift} color="bg-amber-500" title="Gifts & Bonuses" subtitle="Daily gift window amount and first-deposit welcome bonus." />
         <Field
-          label="Gift Amount (UGX)"
+          label="Daily Gift Amount (UGX)"
           id="daily_gift_amount"
           type="number"
           value={form.daily_gift_amount || '1000'}
           onChange={set('daily_gift_amount')}
           placeholder="1000"
-          hint="Amount credited to user wallet when they open the daily gift box. Set 0 to disable gifts."
+          hint="Amount credited when users open the 3:30–4:00 PM daily gift box. Set 0 to disable."
+        />
+        <Field
+          label="First Deposit Bonus (UGX)"
+          id="first_deposit_bonus"
+          type="number"
+          value={form.first_deposit_bonus || '5000'}
+          onChange={set('first_deposit_bonus')}
+          placeholder="5000"
+          hint="Welcome bonus credited to a user's wallet when their very first deposit is approved. Set 0 to disable."
         />
       </GlassCard>
 

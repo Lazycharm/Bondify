@@ -48,7 +48,7 @@ export default function Referrals() {
   };
 
   const shareOn = (platform) => {
-    const msg = `🎯 I'm earning daily from Bondify! Join me and get a UGX 10,000 welcome bonus.\n\nUse my link: ${referralLink}\n\nCode: ${myCode}`;
+    const msg = `🎯 I'm earning daily from Bondify! Join me and get a UGX 5,000 welcome bonus.\n\nUse my link: ${referralLink}\n\nCode: ${myCode}`;
     const urls = {
       WhatsApp: `https://wa.me/?text=${encodeURIComponent(msg)}`,
       Facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`,

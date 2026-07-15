@@ -1,4 +1,5 @@
 import { addGiftCredit } from './depositStore';
+import { uploadCheckIn } from './supabase_ops';
 
 const KEY = 'bondify_checkin';
 export const CHECKIN_BONUS = 300;
@@ -20,7 +21,7 @@ export function msUntilNextCheckIn() {
   return Math.max(0, 24 * 60 * 60 * 1000 - (Date.now() - new Date(lastCheckin).getTime()));
 }
 
-export function doCheckIn() {
+export function doCheckIn(userId = null) {
   if (!canCheckIn()) return 0;
   const data = getCheckInData();
   const now = new Date().toISOString();
@@ -29,7 +30,7 @@ export function doCheckIn() {
     history: [now, ...(data.history || [])].slice(0, 60),
   };
   localStorage.setItem(KEY, JSON.stringify(updated));
-  // Credit immediately to wallet — no accumulation needed
   addGiftCredit(CHECKIN_BONUS);
+  if (userId) uploadCheckIn(userId, now).catch(() => {});
   return CHECKIN_BONUS;
 }

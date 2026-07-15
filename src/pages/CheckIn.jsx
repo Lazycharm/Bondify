@@ -34,7 +34,7 @@ export default function CheckIn() {
   }, []);
 
   function handleCheckIn() {
-    const earned = doCheckIn();
+    const earned = doCheckIn(user?.id);
     if (!earned) return;
     const updated = getCheckInData();
     setData(updated);

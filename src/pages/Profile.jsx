@@ -9,6 +9,7 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import { playSound } from '@/lib/sound';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/supabaseClient';
+import { uploadUserProfile } from '@/lib/supabase_ops';
 import { getWalletBalance } from '@/lib/depositStore';
 import { VIP_LEVELS, formatUGX } from '@/lib/vipData';
 
@@ -69,6 +70,7 @@ export default function Profile() {
   function handleSavePersonal(e) {
     e?.preventDefault();
     saveProfile({ fullName, phone });
+    if (user?.id) uploadUserProfile(user.id, { fullName, phone }).catch(() => {});
     playSound('success');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);

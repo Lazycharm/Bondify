@@ -77,7 +77,7 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
-      subtitle="Join, your UGX 10,000 welcome bonus is waiting"
+      subtitle="Join, your UGX 5,000 welcome bonus is waiting"
       footer={
         <>
           Already have an account?{" "}

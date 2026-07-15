@@ -8,7 +8,7 @@ import { addGiftCredit } from '@/lib/depositStore';
 import { getPaymentSettings } from '@/lib/paymentSettings';
 import { playSound } from '@/lib/sound';
 import { useAuth } from '@/lib/AuthContext';
-import { uploadWalletData } from '@/lib/supabase_ops';
+import { uploadWalletData, uploadDailyGiftClaim } from '@/lib/supabase_ops';
 
 const GIFT_KEY = 'bondify_gift_v2';
 
@@ -86,9 +86,11 @@ export default function DailyGift() {
     setEarnedAmount(amount);
 
     addGiftCredit(amount);
-    if (user?.id) uploadWalletData(user.id); // sync gift credits to Supabase
+    if (user?.id) uploadWalletData(user.id);
+    const claimedDate = new Date().toDateString();
+    if (user?.id) uploadDailyGiftClaim(user.id, claimedDate).catch(() => {});
     const updated = {
-      lastClaimed: new Date().toDateString(),
+      lastClaimed: claimedDate,
       history: [{ date: new Date().toISOString(), amount }, ...(giftState.history || [])].slice(0, 30),
     };
     localStorage.setItem(GIFT_KEY, JSON.stringify(updated));

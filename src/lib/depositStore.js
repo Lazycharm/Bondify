@@ -6,7 +6,7 @@ const WITHDRAWALS_KEY = 'bondify_withdrawals';
 const GIFT_KEY = 'bondify_gift_credits';
 const BOND_DEDUCTIONS_KEY = 'bondify_bond_deductions';
 
-export const FIRST_DEPOSIT_BONUS = 10000;
+import { getPaymentSettings } from './paymentSettings';
 
 export function getDeposits() {
   try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
@@ -43,7 +43,8 @@ export function updateDeposit(id, status) {
     // Grant welcome bonus on very first approved deposit
     if (!localStorage.getItem(BONUS_GIVEN_KEY)) {
       localStorage.setItem(BONUS_GIVEN_KEY, '1');
-      localStorage.setItem(BONUS_KEY, String(FIRST_DEPOSIT_BONUS));
+      const bonusAmt = parseInt(getPaymentSettings().first_deposit_bonus || '5000', 10) || 5000;
+      localStorage.setItem(BONUS_KEY, String(bonusAmt));
       // Bonus is immediately withdrawable after first deposit
       localStorage.setItem(BONUS_WITHDRAWABLE_KEY, '1');
     }
@@ -63,6 +64,7 @@ export function getWalletBalance() {
     .reduce((s, d) => s + (parseInt(d.amount, 10) || 0), 0);
 
   const gifts             = parseInt(localStorage.getItem(GIFT_KEY) || '0', 10) || 0;
+  const adminGifts        = parseInt(localStorage.getItem('bondify_admin_gifts') || '0', 10) || 0;
   const bonus             = parseInt(localStorage.getItem(BONUS_KEY) || '0', 10) || 0;
   const referralEarnings  = parseInt(localStorage.getItem('bondify_referral_earnings') || '0', 10) || 0;
 
@@ -76,7 +78,7 @@ export function getWalletBalance() {
 
   const bondDeductions = parseInt(localStorage.getItem(BOND_DEDUCTIONS_KEY) || '0', 10) || 0;
 
-  return Math.max(0, deposited + gifts + bonus + referralEarnings - withdrawn - bondDeductions);
+  return Math.max(0, deposited + gifts + adminGifts + bonus + referralEarnings - withdrawn - bondDeductions);
 }
 
 export function addGiftCredit(amount) {

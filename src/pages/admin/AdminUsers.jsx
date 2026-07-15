@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { getAllDepositsFromSupabase } from '@/lib/supabase_ops';
+import { supabase } from '@/api/supabaseClient';
 import { formatUGX, VIP_LEVELS } from '@/lib/vipData';
 import { playSound } from '@/lib/sound';
 
@@ -35,19 +36,29 @@ function EditModal({ user: u, onClose, onSave }) {
   const [balanceAdj, setBalanceAdj] = useState('');
   const [saved, setSaved] = useState(false);
 
-  function handleSave() {
-    if (vipOverride) setAdminOverride(u.userId, 'vip_level', parseInt(vipOverride, 10));
-    if (taskFlow) setAdminOverride(u.userId, 'task_flow', taskFlow);
+  async function handleSave() {
+    setSaved(true);
+    const ops = [];
+
     if (balanceAdj && parseInt(balanceAdj, 10) !== 0) {
       const amt = parseInt(balanceAdj, 10);
       if (!isNaN(amt)) {
-        const gifts = JSON.parse(localStorage.getItem('bondify_gifts') || '[]');
-        gifts.push({ id: `ADJ-${Date.now()}`, amount: amt, note: `Admin adjustment for ${u.email}`, created_at: new Date().toISOString() });
-        localStorage.setItem('bondify_gifts', JSON.stringify(gifts));
+        ops.push(supabase.rpc('admin_adjust_gift_credits', { p_user_id: u.userId, p_amount: amt }));
       }
     }
+
+    if (taskFlow) {
+      setAdminOverride(u.userId, 'task_flow', taskFlow);
+      ops.push(supabase.from('user_wallets').upsert({ user_id: u.userId, task_flow: taskFlow }, { onConflict: 'user_id' }));
+    }
+
+    if (vipOverride) {
+      setAdminOverride(u.userId, 'vip_level', parseInt(vipOverride, 10));
+      ops.push(supabase.from('user_wallets').upsert({ user_id: u.userId, vip_level_override: parseInt(vipOverride, 10) }, { onConflict: 'user_id' }));
+    }
+
+    await Promise.all(ops).catch((e) => console.error('[AdminUsers] save failed:', e));
     playSound('success');
-    setSaved(true);
     setTimeout(() => { onSave(); onClose(); }, 1200);
   }
 

@@ -1,3 +1,5 @@
+import { uploadUserFlow } from './supabase_ops';
+
 const FLOW_KEY = 'bondify_task_flow';
 const ELIGIBLE_KEY = 'bondify_sales_eligible';
 
@@ -24,10 +26,15 @@ export function checkAndSetSalesEligibility(approvedDeposits) {
   return false;
 }
 
-export function activateSalesFlow() {
+export function activateSalesFlow(userId = null) {
   localStorage.setItem(FLOW_KEY, 'sales');
   localStorage.setItem(ELIGIBLE_KEY, '1');
-  if (!localStorage.getItem('bondify_sales_activated_at')) {
-    localStorage.setItem('bondify_sales_activated_at', new Date().toISOString());
+  const alreadyActivated = localStorage.getItem('bondify_sales_activated_at');
+  if (!alreadyActivated) {
+    const now = new Date().toISOString();
+    localStorage.setItem('bondify_sales_activated_at', now);
+    if (userId) uploadUserFlow(userId, 'sales', now).catch(() => {});
+  } else if (userId) {
+    uploadUserFlow(userId, 'sales').catch(() => {});
   }
 }

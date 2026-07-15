@@ -95,7 +95,7 @@ export default function Landing() {
             className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-500/20 border border-amber-400/30"
           >
             <Gift size={18} className="text-amber-400" />
-            <span className="text-amber-300 font-semibold text-sm">Join today, get 10,000 UGX free welcome bonus</span>
+            <span className="text-amber-300 font-semibold text-sm">Join today, get 5,000 UGX free welcome bonus</span>
           </motion.div>
 
           {/* CTAs */}
