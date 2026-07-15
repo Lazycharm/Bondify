@@ -79,41 +79,39 @@ export default function DepositInstructions() {
 
   async function handleSubmit() {
     if (!sms.trim()) { setError('Please enter your payment number or SMS reference.'); return; }
+    if (!user?.id) { setError('Session expired. Please refresh the page.'); return; }
     setSubmitting(true);
     setError('');
     try {
-      // Save to Supabase (primary, cross-device)
-      let depositId = `DEP-${Date.now()}`;
-      try {
-        const saved = await saveDepositToSupabase({
-          userId: user?.id,
-          userEmail: user?.email,
-          amount: draft.amount,
-          network: draft.network,
-          userPhone: draft.phone,
-          userSms: sms,
-        });
-        depositId = saved.id;
-      } catch {
-        // Supabase save failed — fall back to localStorage only
-      }
-      // Also save locally so the user sees it immediately
-      addDeposit({
-        userId: user?.id,
-        userEmail: user?.email,
+      // Supabase is the primary store — no silent fallback
+      const saved = await saveDepositToSupabase({
+        userId: user.id,
+        userEmail: user.email,
         amount: draft.amount,
         network: draft.network,
         userPhone: draft.phone,
         userSms: sms,
       });
+
+      // Mirror to localStorage so balance reads work immediately
+      addDeposit({
+        userId: user.id,
+        userEmail: user.email,
+        amount: draft.amount,
+        network: draft.network,
+        userPhone: draft.phone,
+        userSms: sms,
+      });
+
       await sendTelegram(
-        `💰 <b>New Deposit Request</b>\n\nUser: ${user?.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nUser Phone: ${draft.phone}\nSMS Ref: ${sms}\nDeposit ID: ${depositId}`
+        `💰 <b>New Deposit Request</b>\n\nUser: ${user.email}\nAmount: UGX ${draft.amount.toLocaleString()}\nNetwork: ${draft.network.toUpperCase()}\nPhone: ${draft.phone}\nRef: ${sms}\nID: ${saved.id}`
       );
       localStorage.removeItem('bondify_deposit_draft');
       playSound('success');
       setDone(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (e) {
+      console.error('[Deposit] Supabase save failed:', e);
+      setError(e?.message || 'Failed to submit deposit. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }

@@ -94,13 +94,18 @@ export default function Withdrawals() {
     if (amt > totalWithdrawable) { setError('Insufficient balance.'); return false; }
     if (!account.trim()) { setError('Please enter your account number.'); return false; }
 
-    const result = addWithdrawal({ userId: user?.id, userEmail: user?.email, amount: amt, method, account, bypassLock });
-    if (result?.error) { setError(result.error); return false; }
+    // Validate locally first (lock/balance checks in addWithdrawal)
+    const precheck = addWithdrawal({ userId: user?.id, userEmail: user?.email, amount: amt, method, account, bypassLock });
+    if (precheck?.error) { setError(precheck.error); return false; }
 
-    // Also save to Supabase for cross-device visibility
+    // Supabase is the primary store
     try {
       await saveWithdrawalToSupabase({ userId: user?.id, userEmail: user?.email, amount: amt, method, account });
-    } catch { /* localStorage withdrawal already saved */ }
+    } catch (e) {
+      console.error('[Withdrawal] Supabase save failed:', e);
+      setError('Failed to submit withdrawal. Please check your connection and try again.');
+      return false;
+    }
 
     await sendTelegram(
       `📤 <b>New Withdrawal Request</b>\n\nUser: ${user?.email}\nAmount: ${formatUGX(amt)}${result.fee > 0 ? `\nFee (${feePct}%): ${formatUGX(result.fee)}\nNet payout: ${formatUGX(result.net_amount)}` : ''}\nMethod: ${method.toUpperCase()}\nAccount: ${account}\nID: ${result.id}`

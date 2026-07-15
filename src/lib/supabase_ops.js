@@ -1,8 +1,6 @@
 /**
  * supabase_ops.js — Supabase operations for cross-device data.
- * Deposits, withdrawals, platform config, and referrals all go through
- * Supabase so every device sees the same state.
- * localStorage is used as a cache / fallback for fast initial render.
+ * All writes go to Supabase first. localStorage is a read-cache only.
  */
 import { supabase } from '@/api/supabaseClient';
 
@@ -11,7 +9,6 @@ const DEPOSITS_KEY    = 'bondify_deposits';
 const WITHDRAWALS_KEY = 'bondify_withdrawals';
 const REFERRALS_KEY   = 'bondify_referrals';
 
-// Network value mappings between frontend codes and Supabase constraint values
 const NET_TO_DB  = { mtn: 'MTN Mobile Money', airtel: 'Airtel Money', bank: 'Bank Transfer' };
 const NET_FROM_DB = { 'MTN Mobile Money': 'mtn', 'Airtel Money': 'airtel', 'Bank Transfer': 'bank' };
 
@@ -24,7 +21,8 @@ export async function loadPlatformConfigFromSupabase() {
       .select('*')
       .eq('id', 1)
       .single();
-    if (error || !data) return null;
+    if (error) { console.error('[Supabase] loadPlatformConfig:', error.message); return null; }
+    if (!data) return null;
 
     const settings = {
       mtn_number:            data.mtn_number            || '',
@@ -54,7 +52,8 @@ export async function loadPlatformConfigFromSupabase() {
 
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     return settings;
-  } catch {
+  } catch (e) {
+    console.error('[Supabase] loadPlatformConfig exception:', e);
     return null;
   }
 }
@@ -90,7 +89,7 @@ export async function savePlatformConfigToSupabase(settings) {
     updated_at:            new Date().toISOString(),
   });
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] savePlatformConfig:', error.message); throw error; }
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
@@ -123,38 +122,41 @@ export async function saveDepositToSupabase({ userId, userEmail, amount, network
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] saveDeposit:', error.message, error); throw error; }
   return mapDepositFromDb(data);
 }
 
 export async function syncUserDeposits(userId) {
-  const { data, error } = await supabase
-    .from('deposits')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('deposits')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-  if (error || !data) return null;
+    if (error) { console.error('[Supabase] syncUserDeposits:', error.message); return null; }
 
-  const mapped = data.map(mapDepositFromDb);
+    const mapped = data.map(mapDepositFromDb);
 
-  // Update localStorage: replace this user's records with Supabase truth
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem(DEPOSITS_KEY) || '[]'); } catch {}
-  const others = local.filter((d) => d.userId !== userId);
-  localStorage.setItem(DEPOSITS_KEY, JSON.stringify([...mapped, ...others]));
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(DEPOSITS_KEY) || '[]'); } catch {}
+    const others = local.filter((d) => d.userId !== userId);
+    localStorage.setItem(DEPOSITS_KEY, JSON.stringify([...mapped, ...others]));
 
-  // Side effects: apply welcome bonus and sales eligibility based on approved deposits
-  const approvedDeposits = mapped.filter((d) => d.status === 'approved');
-  if (approvedDeposits.length > 0 && !localStorage.getItem('bondify_bonus_given')) {
-    localStorage.setItem('bondify_bonus_given', '1');
-    localStorage.setItem('bondify_bonus_balance', '10000');
-    localStorage.setItem('bondify_bonus_withdrawable', '1');
+    const approvedDeposits = mapped.filter((d) => d.status === 'approved');
+    if (approvedDeposits.length > 0 && !localStorage.getItem('bondify_bonus_given')) {
+      localStorage.setItem('bondify_bonus_given', '1');
+      localStorage.setItem('bondify_bonus_balance', '10000');
+      localStorage.setItem('bondify_bonus_withdrawable', '1');
+    }
+    const hasSalesDeposit = approvedDeposits.some((d) => (parseInt(d.amount, 10) || 0) >= 250000);
+    if (hasSalesDeposit) localStorage.setItem('bondify_sales_eligible', '1');
+
+    return mapped;
+  } catch (e) {
+    console.error('[Supabase] syncUserDeposits exception:', e);
+    return null;
   }
-  const hasSalesDeposit = approvedDeposits.some((d) => (parseInt(d.amount, 10) || 0) >= 250000);
-  if (hasSalesDeposit) localStorage.setItem('bondify_sales_eligible', '1');
-
-  return mapped;
 }
 
 export async function getAllDepositsFromSupabase() {
@@ -163,7 +165,7 @@ export async function getAllDepositsFromSupabase() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] getAllDeposits:', error.message); throw error; }
   return (data || []).map(mapDepositFromDb);
 }
 
@@ -175,7 +177,7 @@ export async function updateDepositInSupabase(id, status) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] updateDeposit:', error.message); throw error; }
   return mapDepositFromDb(data);
 }
 
@@ -210,26 +212,30 @@ export async function saveWithdrawalToSupabase({ userId, userEmail, amount, meth
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] saveWithdrawal:', error.message, error); throw error; }
   return mapWithdrawalFromDb(data);
 }
 
 export async function syncUserWithdrawals(userId) {
-  const { data, error } = await supabase
-    .from('withdrawals')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('withdrawals')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-  if (error || !data) return null;
+    if (error) { console.error('[Supabase] syncUserWithdrawals:', error.message); return null; }
 
-  const mapped = data.map(mapWithdrawalFromDb);
-
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem(WITHDRAWALS_KEY) || '[]'); } catch {}
-  const others = local.filter((w) => w.userId !== userId);
-  localStorage.setItem(WITHDRAWALS_KEY, JSON.stringify([...mapped, ...others]));
-  return mapped;
+    const mapped = data.map(mapWithdrawalFromDb);
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(WITHDRAWALS_KEY) || '[]'); } catch {}
+    const others = local.filter((w) => w.userId !== userId);
+    localStorage.setItem(WITHDRAWALS_KEY, JSON.stringify([...mapped, ...others]));
+    return mapped;
+  } catch (e) {
+    console.error('[Supabase] syncUserWithdrawals exception:', e);
+    return null;
+  }
 }
 
 export async function getAllWithdrawalsFromSupabase() {
@@ -238,7 +244,7 @@ export async function getAllWithdrawalsFromSupabase() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] getAllWithdrawals:', error.message); throw error; }
   return (data || []).map(mapWithdrawalFromDb);
 }
 
@@ -250,7 +256,7 @@ export async function updateWithdrawalInSupabase(id, status) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) { console.error('[Supabase] updateWithdrawal:', error.message); throw error; }
   return mapWithdrawalFromDb(data);
 }
 
@@ -258,37 +264,40 @@ export async function updateWithdrawalInSupabase(id, status) {
 
 export async function saveReferralToSupabase({ referrerId, referredEmail, referredUserId }) {
   if (!referrerId || !referredEmail) return;
-  await supabase.from('referrals').insert({
+  const { error } = await supabase.from('referrals').insert({
     referrer_id:      referrerId.toUpperCase(),
     referred_user_id: referredUserId || null,
     referred_email:   referredEmail,
     level:            1,
   });
-  // Ignore errors (duplicate entries etc.)
+  if (error) console.error('[Supabase] saveReferral:', error.message);
 }
 
 export async function syncUserReferrals(userId) {
-  const referrerId = userId.slice(0, 8).toUpperCase();
-  const { data, error } = await supabase
-    .from('referrals')
-    .select('*')
-    .eq('referrer_id', referrerId);
+  try {
+    const referrerId = userId.slice(0, 8).toUpperCase();
+    const { data, error } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referrer_id', referrerId);
 
-  if (error || !data) return;
+    if (error) { console.error('[Supabase] syncUserReferrals:', error.message); return; }
 
-  const mapped = data.map((r) => ({
-    referrerId:     r.referrer_id,
-    referredEmail:  r.referred_email,
-    referredId:     r.referred_user_id,
-    joinedAt:       r.created_at,
-  }));
+    const mapped = data.map((r) => ({
+      referrerId:    r.referrer_id,
+      referredEmail: r.referred_email,
+      referredId:    r.referred_user_id,
+      joinedAt:      r.created_at,
+    }));
 
-  // Merge with local (avoid duplicates by email)
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem(REFERRALS_KEY) || '[]'); } catch {}
-  const localEmails = new Set(mapped.map((r) => r.referredEmail?.toLowerCase()));
-  const localOnly = local.filter((r) => !localEmails.has(r.referredEmail?.toLowerCase()));
-  localStorage.setItem(REFERRALS_KEY, JSON.stringify([...mapped, ...localOnly]));
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(REFERRALS_KEY) || '[]'); } catch {}
+    const localEmails = new Set(mapped.map((r) => r.referredEmail?.toLowerCase()));
+    const localOnly = local.filter((r) => !localEmails.has(r.referredEmail?.toLowerCase()));
+    localStorage.setItem(REFERRALS_KEY, JSON.stringify([...mapped, ...localOnly]));
+  } catch (e) {
+    console.error('[Supabase] syncUserReferrals exception:', e);
+  }
 }
 
 // ── WALLET DATA (gift credits + bond deductions) ──────────────────────────────
@@ -301,24 +310,32 @@ export async function syncWalletData(userId) {
       .eq('user_id', userId)
       .single();
 
-    if (error || !data) return;
+    if (error) {
+      if (error.code !== 'PGRST116') console.error('[Supabase] syncWalletData:', error.message);
+      return;
+    }
     localStorage.setItem('bondify_gift_credits', String(data.gift_credits || 0));
     localStorage.setItem('bondify_bond_deductions', String(data.bond_deductions || 0));
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error('[Supabase] syncWalletData exception:', e);
+  }
 }
 
 export async function uploadWalletData(userId) {
   if (!userId) return;
-  const giftCredits = parseInt(localStorage.getItem('bondify_gift_credits') || '0', 10) || 0;
+  const giftCredits    = parseInt(localStorage.getItem('bondify_gift_credits')    || '0', 10) || 0;
   const bondDeductions = parseInt(localStorage.getItem('bondify_bond_deductions') || '0', 10) || 0;
   try {
-    await supabase.from('user_wallets').upsert({
-      user_id: userId,
-      gift_credits: giftCredits,
+    const { error } = await supabase.from('user_wallets').upsert({
+      user_id:         userId,
+      gift_credits:    giftCredits,
       bond_deductions: bondDeductions,
-      updated_at: new Date().toISOString(),
+      updated_at:      new Date().toISOString(),
     }, { onConflict: 'user_id' });
-  } catch { /* ignore */ }
+    if (error) console.error('[Supabase] uploadWalletData:', error.message);
+  } catch (e) {
+    console.error('[Supabase] uploadWalletData exception:', e);
+  }
 }
 
 // ── SYNC ALL USER DATA ────────────────────────────────────────────────────────
