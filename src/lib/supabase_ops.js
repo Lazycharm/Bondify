@@ -304,16 +304,15 @@ export async function syncUserReferrals(userId) {
 
 export async function syncWalletData(userId) {
   try {
+    // maybeSingle() returns null (not an error) when 0 rows — avoids 406 in console for new users
     const { data, error } = await supabase
       .from('user_wallets')
       .select('gift_credits, bond_deductions')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      if (error.code !== 'PGRST116') console.error('[Supabase] syncWalletData:', error.message);
-      return;
-    }
+    if (error) { console.error('[Supabase] syncWalletData:', error.message); return; }
+    if (!data) return;
     localStorage.setItem('bondify_gift_credits', String(data.gift_credits || 0));
     localStorage.setItem('bondify_bond_deductions', String(data.bond_deductions || 0));
   } catch (e) {
