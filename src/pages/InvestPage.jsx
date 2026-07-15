@@ -14,7 +14,7 @@ import {
   purchaseBond, getActiveBonds, getTodaysBondIncome, getTotalInvested,
 } from '@/lib/bondStore';
 import { getWalletBalance } from '@/lib/depositStore';
-import { uploadWalletData } from '@/lib/supabase_ops';
+import { uploadWalletData, loadPlatformConfigFromSupabase } from '@/lib/supabase_ops';
 
 const LEVEL_ICONS = [TrendingUp, BarChart2, Landmark, Globe, Star, Gem, Crown];
 
@@ -45,6 +45,7 @@ export default function InvestPage() {
   const [insufficientProduct, setInsufficientProduct] = useState(null);
   const [toast, setToast] = useState(null);
   const [stats, setStats] = useState({ balance: 0, activeBonds: [], todayIncome: 0, totalInvested: 0 });
+  const [bondProducts, setBondProducts] = useState(() => getBondConfig());
 
   const refresh = useCallback(() => {
     if (!user?.id) return;
@@ -56,7 +57,14 @@ export default function InvestPage() {
     });
   }, [user?.id]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+    // Sync bond packages from Supabase so admin changes are reflected immediately
+    loadPlatformConfigFromSupabase().then(() => {
+      setBondProducts(getBondConfig());
+      refresh();
+    });
+  }, [refresh]);
 
   function handleBuy() {
     if (!selected || !user?.id) return;
@@ -139,7 +147,7 @@ export default function InvestPage() {
       {/* ── PRODUCTS TAB ── */}
       {tab === 'products' && (
         <div className="space-y-4">
-          {getBondConfig().map((product, i) => {
+          {bondProducts.map((product, i) => {
             const canAfford = balance >= product.price;
             return (
               <motion.div

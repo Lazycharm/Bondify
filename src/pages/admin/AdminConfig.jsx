@@ -100,9 +100,16 @@ export default function AdminConfig() {
     reader.readAsDataURL(file);
   }
 
-  function saveBonds() {
+  async function saveBonds() {
     saveBondConfig(bonds);
     saveBondImages(bondImages);
+    // Persist bond packages to Supabase so all devices receive the update
+    const currentSettings = getPaymentSettings();
+    try {
+      await savePlatformConfigToSupabase({ ...currentSettings, bond_packages: bonds });
+    } catch (e) {
+      console.error('[AdminConfig] Bond packages Supabase sync failed:', e);
+    }
     playSound('success');
     setBondsSaved(true);
     setTimeout(() => setBondsSaved(false), 2500);

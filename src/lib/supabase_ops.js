@@ -4,6 +4,7 @@
  */
 import { supabase } from '@/api/supabaseClient';
 import { getPaymentSettings } from '@/lib/paymentSettings';
+import { getBondConfig, saveBondConfig } from '@/lib/investData';
 
 const SETTINGS_KEY    = 'bondify_payment_settings';
 const DEPOSITS_KEY    = 'bondify_deposits';
@@ -24,6 +25,11 @@ export async function loadPlatformConfigFromSupabase() {
       .single();
     if (error) { console.error('[Supabase] loadPlatformConfig:', error.message); return null; }
     if (!data) return null;
+
+    // Sync bond packages to localStorage so all devices see admin changes
+    if (Array.isArray(data.bond_packages) && data.bond_packages.length > 0) {
+      saveBondConfig(data.bond_packages);
+    }
 
     const settings = {
       mtn_number:            data.mtn_number            || '',
@@ -87,6 +93,7 @@ export async function savePlatformConfigToSupabase(settings) {
     referral_lv2:          settings.referral_lv2          || '2',
     referral_lv3:          settings.referral_lv3          || '1',
     daily_gift_amount:     settings.daily_gift_amount     || '1000',
+    bond_packages:         settings.bond_packages         || null,
     updated_at:            new Date().toISOString(),
   });
 
