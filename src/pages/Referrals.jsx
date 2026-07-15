@@ -6,6 +6,7 @@ import { formatUGX } from '@/lib/vipData';
 import {
   getMyReferralCode, getReferralLink, calcReferralEarnings, getCommissionRates,
 } from '@/lib/referralStore';
+import { syncUserReferrals } from '@/lib/supabase_ops';
 import { useAuth } from '@/lib/AuthContext';
 import { playSound } from '@/lib/sound';
 
@@ -23,6 +24,11 @@ export default function Referrals() {
     if (!user?.id) return;
     setEarnings(calcReferralEarnings(user.id));
     setRates(getCommissionRates());
+    // Sync from Supabase then refresh so counts are accurate on any device
+    syncUserReferrals(user.id).then(() => {
+      setEarnings(calcReferralEarnings(user.id));
+      setRates(getCommissionRates());
+    });
   }, [user?.id]);
 
   const copyLink = () => {
