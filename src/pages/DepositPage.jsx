@@ -8,17 +8,21 @@ import { playSound } from '@/lib/sound';
 import { getPaymentSettings } from '@/lib/paymentSettings';
 import { getTaskFlow } from '@/lib/taskFlowStore';
 
-const PRESET_AMOUNTS = [20000, 50000, 120000, 250000, 500000, 1000000, 2500000, 5000000];
+const BASE_PRESETS = [50000, 120000, 250000, 500000, 1000000, 2500000, 5000000];
 
 export default function DepositPage() {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState(null);
-  const [custom, setCustom] = useState('');
 
   const flow = getTaskFlow();
   const settings = getPaymentSettings();
   const depositMin = parseInt(flow === 'sales' ? (settings.sales_deposit_min || '20000') : (settings.daily_deposit_min || '20000'), 10) || 20000;
   const depositMax = parseInt(flow === 'sales' ? (settings.sales_deposit_max || '0') : (settings.daily_deposit_max || '0'), 10) || 0;
+
+  // First preset is always the configured minimum; rest are filtered to be above it
+  const presets = [depositMin, ...BASE_PRESETS.filter((a) => a > depositMin)];
+
+  const [selected, setSelected] = useState(depositMin);
+  const [custom, setCustom] = useState('');
 
   const amount = custom ? parseInt(custom, 10) : selected;
   const valid = amount && amount >= depositMin && (depositMax === 0 || amount <= depositMax);
@@ -55,7 +59,7 @@ export default function DepositPage() {
         <div>
           <p className="text-sm font-medium mb-3">Select recharge amount</p>
           <div className="grid grid-cols-4 gap-2">
-            {PRESET_AMOUNTS.map((amt) => (
+            {presets.map((amt) => (
               <motion.button
                 key={amt}
                 whileTap={{ scale: 0.95 }}
@@ -66,7 +70,7 @@ export default function DepositPage() {
                     : 'border-border hover:border-emerald-500/50 text-foreground'
                 }`}
               >
-                {amt >= 1000000 ? `${amt / 1000000}M` : `${amt / 1000}K`}
+                {amt >= 1000000 ? `${(amt / 1000000).toLocaleString()}M` : amt >= 1000 ? `${(amt / 1000).toLocaleString()}K` : formatUGX(amt)}
               </motion.button>
             ))}
           </div>
