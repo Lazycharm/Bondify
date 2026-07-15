@@ -9,7 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { sendTelegram } from "@/lib/telegramNotify";
 import { storeRefCode, getStoredRefCode, addReferral, clearRefCode } from "@/lib/referralStore";
-import { saveReferralToSupabase } from "@/lib/supabase_ops";
+import { saveReferralToSupabase, loadPlatformConfigFromSupabase } from "@/lib/supabase_ops";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -52,8 +52,11 @@ export default function Register() {
         clearRefCode();
       }
 
+      const cfg = await loadPlatformConfigFromSupabase().catch(() => null);
+      const tgCreds = cfg ? { token: cfg.telegram_token, chatId: cfg.telegram_chat_id } : {};
       await sendTelegram(
-        `🆕 <b>New User Registered</b>\n\nName: ${fullName.trim()}\nEmail: ${email}\nReferred by: ${refCode || 'direct'}\nTime: ${new Date().toLocaleString()}`
+        `🆕 <b>New User Registered</b>\n\nName: ${fullName.trim()}\nEmail: ${email}\nReferred by: ${refCode || 'direct'}\nTime: ${new Date().toLocaleString()}`,
+        tgCreds
       );
       navigate('/dashboard');
     } catch (err) {
